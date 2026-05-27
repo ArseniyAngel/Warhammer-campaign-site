@@ -1,4 +1,4 @@
-# Этап сборки
+# Используем один и тот же образ .NET 10 SDK для всего процесса
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -6,16 +6,16 @@ WORKDIR /src
 COPY *.csproj ./
 RUN dotnet restore
 
-# Копируем всё остальное и собираем релиз
+# Копируем всё остальное и компилируем релизную версию
 COPY . ./
 RUN dotnet publish -c Release -o /app
 
-# Этап запуска
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Используем тот же гарантированный .NET 10 SDK для финального запуска сайта
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS final
 WORKDIR /app
 COPY --from=build /app .
 
-# Указываем порт, который ожидает Render
+# Передаем настройки портов для Render
 ENV ASPNETCORE_URLS=http://+:10000
 EXPOSE 10000
 
