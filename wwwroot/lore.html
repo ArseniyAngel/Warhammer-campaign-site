@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> -->
+    <title>Хроники Империума — Лор Кампании</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="main-nav">
+        <a href="index.html">← Вернуться к Карте</a>
+        <span class="nav-title">Военные Хроники Игнис-IV</span>
+    </nav>
+
+    <div class="app-container">
+        <section id="gm-news-panel" class="admin-section" style="display: none; margin-bottom: 30px;">
+            <h2>Передача логов в инфосеть тактической группы</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="admin-field">
+                    <label>Заголовок донесения</label>
+                    <input type="text" id="news-title" placeholder="Пример: Прорыв Орка Скверны в Квадрант Дельта">
+                </div>
+
+                <div class="admin-field">
+                    <label>Текст шифровки (Хроника событий)</label>
+                    <textarea id="news-content" rows="6"
+                        placeholder="Внесите изменения в свитки памяти Официо Логистикам..."></textarea>
+                </div>
+
+                <button onclick="submitNews()" style="align-self: flex-start; margin-top: 5px;">Опубликовать в
+                    Хроники</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Лента Событий Кампании</h2>
+            <div id="news-feed">
+                <p>Загрузка хроник сектора...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="lore.js"></script>
+</body>
