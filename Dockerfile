@@ -1,5 +1,5 @@
 # Этап сборки
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Копируем файлы проекта и восстанавливаем зависимости
