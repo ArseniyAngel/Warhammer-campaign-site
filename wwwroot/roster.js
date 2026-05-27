@@ -349,7 +349,7 @@ async function loadSelectedUserForAdmin() {
                         <label style="font-size: 0.85rem; color: #aaa; font-weight: bold;">Наложить новый Боевой Шрам:</label>
                         <select id="gm-scars-${s.id}" style="width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.9rem; border-radius:4px;">
                             <option value="0">-- Выбрать ID шрама из базы --</option>
-                            ${scarsList.map(t => `<option value="${t.id}">${t.name} — ${t.description}</option>`).join('')}
+                            ${scarsList.map(t => `<option value="${t.id}">${t.id} — ${t.description}</option>`).join('')}
                         </select>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 5px;">

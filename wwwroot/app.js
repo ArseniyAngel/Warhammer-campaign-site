@@ -266,7 +266,7 @@ function selectSector(sectorId) {
     if (sector.gmMarks && sector.gmMarks.trim() !== "") {
         marksHtml = `
             <div style="margin-top: 15px; padding: 10px; background: rgba(77, 184, 255, 0.1); border-left: 4px solid #4db8ff; color: #4db8ff;">
-                <strong>📡 Тактические разведданные:</strong><br>
+                <strong>Тактические разведданные:</strong><br>
                 ${sector.gmMarks}
             </div>
         `;

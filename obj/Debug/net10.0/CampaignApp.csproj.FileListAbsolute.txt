@@ -151,9 +151,11 @@ D:\Wahasite\CampaignApp\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Wahasite\CampaignApp\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Wahasite\CampaignApp\bin\Debug\net10.0\CampaignApp.staticwebassets.runtime.json
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\edj67vopvo-{0}-235bhurwih-235bhurwih.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\wbld6p423d-{0}-ggn79fbpg0-ggn79fbpg0.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\w7ok8vb3f2-{0}-bppdi5091d-bppdi5091d.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\00mofq31y1-{0}-blbg7kn41o-blbg7kn41o.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\web5thtpog-{0}-xycxcywic0-xycxcywic0.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\ejaxmfdjwe-{0}-26dg0atnuj-26dg0atnuj.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\7t279f5xc7-{0}-f4522hby7g-f4522hby7g.gz
+D:\Wahasite\CampaignApp\bin\Debug\net10.0\campaign.db
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\CampaignApp.sourcelink.json
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\00mofq31y1-{0}-ayfxfvvxip-ayfxfvvxip.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\wbld6p423d-{0}-lvuhnyyuv8-lvuhnyyuv8.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\web5thtpog-{0}-ue98f9rt4l-ue98f9rt4l.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\ejaxmfdjwe-{0}-op74xx6ja4-op74xx6ja4.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\7t279f5xc7-{0}-wtmuitmo4d-wtmuitmo4d.gz
