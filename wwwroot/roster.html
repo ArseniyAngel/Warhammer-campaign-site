@@ -153,88 +153,94 @@
                             структуры армии.</p>
                     </div>
 
-                </section>
-                <div class="gm-trait-forge"
-                    style="margin-top: 30px; margin-bottom: 30px; background: #111418; border: 1px solid #ff9800; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(255,152,0,0.1); font-family: 'Courier New', Courier, monospace; box-sizing: border-box;">
-                    <h3
-                        style="color: #ff9800; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,152,0,0.2); padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-                        Добавление улучшений
-                    </h3>
+                    <div class="gm-trait-forge"
+                        style="margin-top: 30px; margin-bottom: 30px; background: #111418; border: 1px solid #ff9800; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(255,152,0,0.1); font-family: 'Courier New', Courier, monospace; box-sizing: border-box;">
+                        <h3
+                            style="color: #ff9800; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,152,0,0.2); padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                            Добавление улучшений
+                        </h3>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">НАЗВАНИЕ
-                                МОДЕРНИЗАЦИИ:</label>
-                            <input type="text" id="new-trait-name" placeholder="Пример: Ионные щиты класса 'Заслон'"
-                                style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">НАЗВАНИЕ
+                                    МОДЕРНИЗАЦИИ:</label>
+                                <input type="text" id="new-trait-name" placeholder="Пример: Ионные щиты класса 'Заслон'"
+                                    style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem;">
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ОГРАНИЧЕНИЕ
+                                    ТИПА:</label>
+                                <select id="new-trait-restriction"
+                                    style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer;">
+                                    <option value="All">All</option>
+                                    <option value="Infantry">Infantry</option>
+                                    <option value="Vehicle">Vehicle</option>
+                                    <option value="Monster">Monster</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ОГРАНИЧЕНИЕ ТИПА:</label>
-                            <select id="new-trait-restriction"
-                                style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer;">
-                                <option value="All">All</option>
-                                <option value="Infantry">Infantry</option>
-                                <option value="Vehicle">Vehicle</option>
-                                <option value="Monster">Monster</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px;">
-                        <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ЭФФЕКТ И ОПИСАНИЕ:</label>
-                        <textarea id="new-trait-desc"
-                            placeholder="Опишите правила. Например: Модель получает инвуль 5+ против стрелковых атак..."
-                            style="padding: 12px; background: #000; color: #eee; border: 1px solid #444; border-radius: 4px; height: 70px; font-size: 0.9rem; font-family: sans-serif; resize: vertical;"></textarea>
-                    </div>
-
-                    <div
-                        style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; align-items: center;">
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="color: #4db8ff; font-size: 0.85rem; font-weight: bold;">ЦЕНА ОФ:</label>
-                            <input type="number" id="new-trait-points-cost" value="15"
-                                style="padding: 10px; background: #000; color: #4db8ff; border: 1px solid #444; border-radius: 4px; font-weight: bold; font-size: 0.9rem; text-align: center;">
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="color: #ff9800; font-size: 0.85rem; font-weight: bold;">ПРИБАВКА К СТОИМОСТИ
-                                (pts):</label>
-                            <input type="number" id="new-trait-pts" value="10"
-                                style="padding: 10px; background: #000; color: #ff9800; border: 1px solid #444; border-radius: 4px; font-weight: bold; font-size: 0.9rem; text-align: center;">
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px;">
+                            <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ЭФФЕКТ И
+                                ОПИСАНИЕ:</label>
+                            <textarea id="new-trait-desc"
+                                placeholder="Опишите правила. Например: Модель получает инвуль 5+ против стрелковых атак..."
+                                style="padding: 12px; background: #000; color: #eee; border: 1px solid #444; border-radius: 4px; height: 70px; font-size: 0.9rem; font-family: sans-serif; resize: vertical;"></textarea>
                         </div>
 
                         <div
-                            style="display: flex; flex-direction: column; gap: 6px; width: 100%; box-sizing: border-box;">
-                            <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ДОСТУПНОСТЬ:</label>
-                            <select id="new-trait-general-select" onchange="toggleFactionInput(this.value)"
-                                style="width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer; box-sizing: border-box;">
-                                <option value="true">Общая (Всем фракциям)</option>
-                                <option value="false">Фракционная (Уникальная)</option>
+                            style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; align-items: center;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="color: #4db8ff; font-size: 0.85rem; font-weight: bold;">ЦЕНА ОФ:</label>
+                                <input type="number" id="new-trait-points-cost" value="15"
+                                    style="padding: 10px; background: #000; color: #4db8ff; border: 1px solid #444; border-radius: 4px; font-weight: bold; font-size: 0.9rem; text-align: center;">
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="color: #ff9800; font-size: 0.85rem; font-weight: bold;">ПРИБАВКА К
+                                    СТОИМОСТИ
+                                    (pts):</label>
+                                <input type="number" id="new-trait-pts" value="10"
+                                    style="padding: 10px; background: #000; color: #ff9800; border: 1px solid #444; border-radius: 4px; font-weight: bold; font-size: 0.9rem; text-align: center;">
+                            </div>
+
+                            <div
+                                style="display: flex; flex-direction: column; gap: 6px; width: 100%; box-sizing: border-box;">
+                                <label style="color: #ccc; font-size: 0.85rem; font-weight: bold;">ДОСТУПНОСТЬ:</label>
+                                <select id="new-trait-general-select" onchange="toggleFactionInput(this.value)"
+                                    style="width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer; box-sizing: border-box;">
+                                    <option value="true">Общая (Всем фракциям)</option>
+                                    <option value="false">Фракционная (Уникальная)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="new-trait-faction-block"
+                            style="display: none; margin-bottom: 20px; flex-direction: column; gap: 6px;">
+                            <label style="color: #ffb74d; font-size: 0.85rem; font-weight: bold;">УКАЖИТЕ ЦЕЛЕВУЮ
+                                ФРАКЦИЮ:</label>
+                            <select id="new-trait-faction-name"
+                                style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer;">
+                                <option value="Кровавые Ангелы">Кровавые Ангелы</option>
+                                <option value="Астра Милитарум">Астра Милитарум</option>
+                                <option value="Некроны">Некроны</option>
+                                <option value="Аэлдари">Аэлдари</option>
                             </select>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button onclick="createNewTraitByGM()"
+                                style="padding: 12px 35px; background: #ff9800; color: #000; border: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(255,152,0,0.15); transition: 0.2s;"
+                                onmouseover="this.style.background='#ffb74d'"
+                                onmouseout="this.style.background='#ff9800'">
+                                Добавить Улучшение
+                            </button>
                         </div>
                     </div>
 
-                    <div id="new-trait-faction-block"
-                        style="display: none; margin-bottom: 20px; flex-direction: column; gap: 6px;">
-                        <label style="color: #ffb74d; font-size: 0.85rem; font-weight: bold;">УКАЖИТЕ ЦЕЛЕВУЮ
-                            ФРАКЦИЮ:</label>
-                        <select id="new-trait-faction-name"
-                            style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 0.9rem; cursor: pointer;">
-                            <option value="Кровавые Ангелы">Кровавые Ангелы</option>
-                            <option value="Астра Милитарум">Астра Милитарум</option>
-                            <option value="Некроны">Некроны</option>
-                            <option value="Аэлдари">Аэлдари</option>
-                        </select>
-                    </div>
+                </section>
 
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button onclick="createNewTraitByGM()"
-                            style="padding: 12px 35px; background: #ff9800; color: #000; border: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(255,152,0,0.15); transition: 0.2s;"
-                            onmouseover="this.style.background='#ffb74d'" onmouseout="this.style.background='#ff9800'">
-                            Добавить Улучшение
-                        </button>
-                    </div>
-                </div>
             </div>
 
         </div>
