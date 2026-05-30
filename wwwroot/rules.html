@@ -184,21 +184,9 @@
             </div>
         </div>
 
-        <div class="section-card">
-            <h2>🎯 Текущие боевые задачи</h2>
-            <div id="missions-list"></div>
-
-            <div id="gm-mission-panel" class="gm-panel">
-                <h3>Добавить новую миссию (ГМ)</h3>
-                <input type="text" id="mission-title" placeholder="Название миссии">
-                <textarea id="mission-desc" placeholder="Описание и задачи..."></textarea>
-                <input type="text" id="mission-reward" placeholder="Награда за выполнение">
-                <button class="action-btn" onclick="addMission()">Опубликовать миссию</button>
-            </div>
-        </div>
 
         <div class="section-card">
-            <h2>❓ Часто задаваемые вопросы (FAQ)</h2>
+            <h2>Часто задаваемые вопросы (FAQ)</h2>
             <div id="faq-list"></div>
 
             <div id="gm-faq-panel" class="gm-panel">
@@ -261,43 +249,6 @@
             loadRegulations();
         }
 
-        // --- МИССИИ ---
-        async function loadMissions() {
-            const res = await fetch('/api/hub/missions');
-            const missions = await res.json();
-            const list = document.getElementById('missions-list');
-            list.innerHTML = missions.length === 0 ? "<p>Нет активных миссий.</p>" : "";
-
-            missions.forEach(m => {
-                list.innerHTML += `
-                <div class="item-card mission-active">
-                    <button class="delete-btn" style="display: ${isAdmin ? 'block' : 'none'}" onclick="deleteMission(${m.id})">❌ Удалить</button>
-                    <h3>${m.title}</h3>
-                    <p style="white-space: pre-wrap;">${m.description}</p>
-                    ${m.reward ? `<p class="reward-text">Бонус: ${m.reward}</p>` : ''}
-                </div>`;
-            });
-        }
-
-        async function addMission() {
-            const title = document.getElementById('mission-title').value;
-            const description = document.getElementById('mission-desc').value;
-            const reward = document.getElementById('mission-reward').value;
-
-            await fetch('/api/hub/missions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, reward, isActive: true })
-            });
-            loadMissions();
-        }
-
-        async function deleteMission(id) {
-            if (confirm("Удалить эту стратегическую миссию?")) {
-                await fetch(`/api/hub/missions/${id}`, { method: 'DELETE' });
-                loadMissions();
-            }
-        }
 
         // --- FAQ ---
         async function loadFaqs() {

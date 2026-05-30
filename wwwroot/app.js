@@ -2,7 +2,7 @@
 let currentUser = { username: "", role: "Guest" };
 // Текущий активный слой карты ("surface" - поверхность, "underground" - подземка)
 let currentLayer = "surface";
-
+let selectedSector = null;
 // 1. Проверка авторизации при загрузке страницы
 async function checkAuth() {
     try {
@@ -144,7 +144,6 @@ async function loadMap() {
     }
 }
 
-// Отрендерить сетку и полигоны
 function renderMapLayout() {
     if (!allSectors || allSectors.length === 0) return;
 
@@ -154,14 +153,12 @@ function renderMapLayout() {
         <svg viewBox="0 0 800 600" width="100%" style="background: #0f0f11; border-radius: 8px; border: 2px solid ${isUnder ? '#4db8ff' : '#444'};">
     `;
 
-    // Выбор фоновой картинки в зависимости от слоя
     if (!isUnder) {
         svgHtml += `<image href="map.jpg" x="0" y="0" width="800" height="600" opacity="0.65" />`;
     } else {
         svgHtml += `<image href="underground.jpg" x="0" y="0" width="800" height="600" opacity="0.5" />`;
     }
 
-    // Технологическая сетка радара
     let gridColor = isUnder ? "rgba(77,184,255,0.08)" : "rgba(255,255,255,0.05)";
     svgHtml += `
         <g stroke="${gridColor}" stroke-width="1">
@@ -171,14 +168,12 @@ function renderMapLayout() {
     `;
 
     allSectors.forEach(sector => {
-        // Сектора с ID >= 9 уходят под землю
         let sectorIsUnderground = (sector.id >= 9 || sector.isUnderground === true);
 
         if (isUnder === sectorIsUnderground) {
             const faction = getFactionData(sector.controllingFactionId);
             let coords = sector.coordinates;
 
-            // Резервный расчет координат на случай сброса БД
             if (!coords || coords.trim() === "") {
                 coords = getDefaultCoords(sector.id);
             }
@@ -208,9 +203,7 @@ function renderMapLayout() {
     document.getElementById('map-container').innerHTML = svgHtml;
 }
 
-// Дефолтная сетка, если в базе стерты координаты
 function getDefaultCoords(id) {
-    // Поверхность: 8 зон (2 ряда по 4 зоны)
     if (id === 1) return "0,0 200,0 200,300 0,300";
     if (id === 2) return "200,0 400,0 400,300 200,300";
     if (id === 3) return "400,0 600,0 600,300 400,300";
@@ -220,7 +213,6 @@ function getDefaultCoords(id) {
     if (id === 7) return "400,300 600,300 600,600 400,600";
     if (id === 8) return "600,300 800,300 800,600 600,600";
 
-    // Подземелье: 6 зон (2 ряда по 3 зоны)
     if (id === 9) return "0,0 266,0 266,300 0,300";
     if (id === 10) return "266,0 533,0 533,300 266,300";
     if (id === 11) return "533,0 800,0 800,300 533,300";
@@ -233,7 +225,7 @@ function getDefaultCoords(id) {
 
 function getCenterOfCoords(coordsStr, sectorId) {
     if (sectorId === 14) {
-        return { x: 700, y: 460 }; // Смещаем точку отрисовки текста вглубь правой части
+        return { x: 700, y: 460 };
     }
     try {
         let pairs = coordsStr.split(' ');
@@ -254,82 +246,245 @@ function getCenterOfCoords(coordsStr, sectorId) {
 
 let selectedSectorId = null;
 
-function selectSector(sectorId) {
-    selectedSectorId = sectorId;
+// --- ДИНАМИЧЕСКИЕ СТРОКИ ДЛЯ ФАЙЛОВ В АДМИНКЕ ---
+function addAdminFileRow(name = '', url = '') {
+    const container = document.getElementById('admin-files-container');
+    if (!container) return;
 
-    // Ищем сектор (бэкенд отдает строго id в нижнем регистре)
+    const row = document.createElement('div');
+    row.className = 'admin-file-row';
+    row.style = 'display: flex; gap: 10px; align-items: center; width: 100%; box-sizing: border-box;';
+    row.innerHTML = `
+        <input type="text" class="admin-input file-name" placeholder="Название файла (например: Карта высот)" value="${name}" style="flex: 1;">
+        <input type="text" class="admin-input file-url" placeholder="Ссылка на документ" value="${url}" style="flex: 2;">
+        <button type="button" onclick="this.parentElement.remove()" style="padding: 12px; background: rgba(162,0,37,0.2); border: 1px solid #a20025; color: #ff4d4d; border-radius:4px; cursor:pointer; font-weight:bold;">✕</button>
+    `;
+    container.appendChild(row);
+}
+
+function getAdminFilesData() {
+    const rows = document.querySelectorAll('.admin-file-row');
+    const files = [];
+    rows.forEach(row => {
+        const name = row.querySelector('.file-name').value.trim();
+        const url = row.querySelector('.file-url').value.trim();
+        if (name && url) {
+            files.push({ name, url });
+        }
+    });
+    return files;
+}
+
+// --- КЛИК ПО СЕКТОРУ И ВЫВОД АКТИВНЫХ МИССИЙ НА ГЛАВНУЮ ПАНЕЛЬ ---
+function selectSector(sectorId) {
+    selectedSector = allSectors.find(s => s.id === sectorId);
+    if (!selectedSector) {
+        console.error("Сектор не найден!");
+        return;
+    }
+    document.getElementById('admin-sector-name-label').innerText = selectedSector.name;
     const sector = allSectors.find(s => s.id === sectorId);
     if (!sector) return;
 
     const faction = getFactionData(sector.controllingFactionId);
-    const descriptionText = sector.description || "Особых примет ландшафта не зарегистрировано.";
-    const currentMarks = sector.gmMarks || "";
+    const container = document.getElementById('sector-missions-container');
+    if (!container) return;
 
-    // 1. Обновляем инфо-карточку для игроков
-    const detailsContainer = document.getElementById('sector-details');
-    if (detailsContainer) {
-        let marksHtml = "";
-        if (currentMarks.trim() !== "") {
-            marksHtml = `
-                <div style="margin-top: 15px; padding: 10px; background: rgba(77, 184, 255, 0.1); border-left: 4px solid #4db8ff; color: #4db8ff;">
-                    <strong>Тактические разведданные:</strong><br>
-                    ${currentMarks}
+    // Безопасный парсинг пула данных миссии из полей сектора
+    const missionName = sector.missionName || "Разведывательная операция";
+    const missionStatus = sector.missionStatus || "active"; // active, hidden, completed
+    const descriptionText = sector.description || "Особых условий правил миссии и ландшафта не заявлено.";
+    const currentMarks = sector.gmMarks || "";
+    const files = sector.files || []; // Массив объектов [{name, url}]
+    const votes = sector.votes || []; // Массив строк ["User1", "User2"]
+
+    const hasVoted = votes.includes(currentUser.username);
+
+    // Скрытие миссии от обычных игроков, если ГМ выставил статус "hidden"
+    if (missionStatus === "hidden" && currentUser.role !== "Admin") {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #666;">
+                <p style="font-style: italic; margin: 0;">В данном секторе нет активных боевых операций. Высадка недоступна.</p>
+            </div>
+        `;
+    } else {
+        // Отрендерить прикрепленные файлы
+        let filesHtml = "";
+        if (files.length > 0) {
+            filesHtml = `
+                <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 12px;">
+                    <strong style="color: #fff; font-size: 0.9rem; display: block; margin-bottom: 8px;">📁 Материалы брифинга:</strong>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        ${files.map(f => `
+                            <a href="${f.url}" target="_blank" style="display: flex; align-items: center; background: #1c2024; border: 1px solid #444; color: #4db8ff; padding: 8px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: bold; transition: 0.2s;" onmouseover="this.style.borderColor='#4db8ff'" onmouseout="this.style.borderColor='#444'">
+                                <span style="margin-right: 6px;">📄</span> ${f.name}
+                            </a>
+                        `).join('')}
+                    </div>
                 </div>
             `;
         }
 
-        detailsContainer.innerHTML = `
-            <h3>${sector.name}</h3>
-            <p><strong>Статус контроля:</strong></p>
-            <span class="faction-badge" style="background-color: ${faction.color}; color: #fff; padding: 5px 10px; border-radius: 4px; display: inline-block; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);">
-                ${faction.name}
-            </span>
-            <p style="margin-top: 15px; line-height: 1.4; color: #ccc;">
-                <strong>Сводка ландшафта:</strong><br>${descriptionText}
-            </p>
-            ${marksHtml}
-            <p style="margin-top: 20px;"><small style="color: #555;">Системный ID: ${sectorId} | Тип: ${sector.isUnderground ? 'Подземелье' : 'Поверхность'}</small></p>
+        // Кнопка голосования за участие в миссии (Только для игроков, скрыта для Архива)
+        let voteButtonHtml = "";
+        if (currentUser.role === "Player") {
+            voteButtonHtml = `
+                <div style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px;">
+                    ${hasVoted
+                    ? `<div style="background: rgba(76,175,80,0.1); border: 1px solid #4caf50; padding: 10px; border-radius: 4px; color: #4caf50; font-weight: bold; text-align: center; font-size: 0.9rem;">
+                                Ваша готовность к участию в этой миссии подтверждена
+                           </div>`
+                    : `<button onclick="voteForSector(${sectorId})" style="width: 100%; background: #2b579a; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(43,87,154,0.3);" onmouseover="this.style.background='#3b6cb3'" onmouseout="this.style.background='#2b579a'">
+                                Голосовать за участие в миссии
+                           </button>`
+                }
+                </div>
+            `;
+        }
+
+        let archiveStatusHtml = (missionStatus === "completed")
+            ? `<div style="background: rgba(162,0,37,0.15); border: 1px solid #a20025; color: #ff4d4d; padding: 6px; text-align: center; border-radius: 4px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px;">🔒 Миссия завершена (Архив)</div>`
+            : "";
+
+        container.innerHTML = `
+            ${archiveStatusHtml}
+            <div style="background: #1c1f22; border: 1px solid #3a3f44; padding: 15px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed #444; padding-bottom: 8px; margin-bottom: 12px;">
+                    <h3 style="margin: 0; color: #ff9800; font-family: 'Courier New', monospace; font-size: 1.15rem;">${missionName}</h3>
+                    <span style="font-size: 0.75rem; color: #555; font-family: monospace;">Сектор ${sectorId}</span>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; display:block;">Контроль сектора:</span>
+                    <span class="faction-badge" style="background-color: ${faction.color}; color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; font-weight: bold; margin-top: 4px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1);">
+                        ${faction.name}
+                    </span>
+                </div>
+
+                <div style="color: #ddd; font-size: 0.9rem; line-height: 1.4;">
+                    <strong style="color: #aaa; font-size: 0.8rem; text-transform: uppercase; display:block; margin-bottom: 4px;">Правила миссии и лор:</strong>
+                    <p style="margin: 0; white-space: pre-line;">${descriptionText}</p>
+                </div>
+
+               ${currentMarks.trim() !== "" ? `
+    <div style="margin-top: 12px; padding: 8px 10px; background: rgba(77, 184, 255, 0.08); border-left: 3px solid #4db8ff; color: #4db8ff; font-size: 0.85rem; border-radius: 0 4px 4px 0;">
+        <strong>Фронтовые разведданные:</strong> 
+        ${currentMarks
+                    .replace(/Операция утверждена силами: \[[^\]]+\](,\s*\[[^\]]+\])*/g, '') // Удаляет всю строку с игроками
+                    .trim()
+                }
+    </div>
+` : ""}
+
+                ${filesHtml}
+                ${missionStatus === "active" ? voteButtonHtml : ""}
+            </div>
         `;
     }
 
-    // 2. Синхронизируем данные с инпутами в панели ГМ
+    // --- СИНХРОНИЗАЦИЯ С ТЕРМИНАЛОМ ГМ ---
     const adminSectorIdInput = document.getElementById('admin-sector-id');
-    const adminSectorNameInput = document.getElementById('admin-sector-name-input');
+    const adminSectorNameLabel = document.getElementById('admin-sector-name-label');
     const adminFactionSelect = document.getElementById('admin-faction-select');
+    const adminMissionStatus = document.getElementById('admin-mission-status');
+    const adminMissionName = document.getElementById('admin-mission-name');
     const adminDesc = document.getElementById('admin-sector-desc');
     const adminMarks = document.getElementById('admin-sector-marks');
+    const adminFilesContainer = document.getElementById('admin-files-container');
+    const adminVotesLog = document.getElementById('admin-votes-log');
 
     if (adminSectorIdInput) adminSectorIdInput.value = sectorId;
-    if (adminSectorNameInput) adminSectorNameInput.value = sector.name;
+    if (adminSectorNameLabel) adminSectorNameLabel.innerText = `${sector.name} (ID: ${sectorId})`;
     if (adminFactionSelect) adminFactionSelect.value = sector.controllingFactionId || 0;
+    if (adminMissionStatus) adminMissionStatus.value = missionStatus;
+    if (adminMissionName) adminMissionName.value = sector.missionName || "";
     if (adminDesc) adminDesc.value = sector.description || "";
     if (adminMarks) adminMarks.value = currentMarks;
+
+    if (adminFilesContainer) {
+        adminFilesContainer.innerHTML = '';
+        files.forEach(f => addAdminFileRow(f.name, f.url));
+    }
+
+    // В функции selectSector
+    if (adminVotesLog) {
+        // Парсим строку JSON прямо из VoterList
+        const voters = JSON.parse(selectedSector.voterList || "[]");
+
+        if (voters.length > 0) {
+            adminVotesLog.innerHTML = `<span>Проголосовали (${voters.length}):</span>` +
+                voters.map(v => `<span>  ${v}</span>`).join('');
+        } else {
+            adminVotesLog.innerHTML = "Заявок нет.";
+        }
+    }
 }
 
-async function saveSectorChanges() {
-    const currentSectorId = document.getElementById('admin-sector-id').value;
-    if (!currentSectorId) {
-        alert("Сначала выберите сектор на карте!");
+// --- ГОЛОСОВАНИЕ ЗА МИССИЮ ---
+async function voteForSector(sectorId) {
+    if (currentUser.role !== "Player") {
+        alert("Голосовать могут только авторизованные игроки!");
         return;
     }
 
-    const newName = document.getElementById('admin-sector-name-input').value.trim();
-    if (!newName || newName === "не выбран") {
-        alert("Поле названия стратегического объекта не может быть пустым!");
+    try {
+        const response = await fetch(`/api/map/${sectorId}/vote`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+            alert("Голос успешно отдан!");
+
+            // !!! ВАЖНО: ОБНОВЛЯЕМ КАРТУ ПОСЛЕ ГОЛОСА !!!
+            // Получаем свежий список секторов с сервера, где уже есть новый голос в GMMarks
+            const mapResp = await fetch('/api/map');
+            allSectors = await mapResp.json();
+
+            // Обновляем текущий отображаемый сектор (чтобы админ увидел изменения в блоке admin-votes-log)
+            selectSector(parseInt(sectorId, 10));
+        } else {
+            const err = await response.text();
+            alert("Ошибка при голосовании: " + err);
+        }
+    } catch (e) {
+        console.error("Ошибка сети:", e);
+    }
+}
+
+// --- СОХРАНЕНИЕ ПАРАМЕТРОВ МИССИИ ГМ-ОМ ---
+// --- СОХРАНЕНИЕ ПАРАМЕТРОВ МИССИИ ГМ-ОМ ---
+async function saveSectorChanges() {
+    const currentSectorId = document.getElementById('admin-sector-id').value;
+    if (!currentSectorId) {
+        alert("Сначала выберите сектор на стратегической карте!");
         return;
     }
 
     const factionSelectValue = document.getElementById('admin-faction-select').value;
+    const mStatus = document.getElementById('admin-mission-status').value;
+    const mName = document.getElementById('admin-mission-name').value.trim();
     const newMarks = document.getElementById('admin-sector-marks').value.trim();
     const newDesc = document.getElementById('admin-sector-desc').value.trim();
-    const newFactionId = parseInt(factionSelectValue, 10);
 
-    // Чистый, боевой JSON без мусора
+    const newFactionId = parseInt(factionSelectValue, 10);
+    const updatedFiles = getAdminFilesData();
+
+    // НАХОДИМ ОРИГИНАЛЬНОЕ ИМЯ СЕКТОРА
+    // Так как поле Name в C# модели имеет атрибут [Required], его необходимо передавать,
+    // иначе встроенный валидатор ASP.NET Core вернет ошибку 400 Bad Request.
+    const currentSector = allSectors.find(s => s.id === parseInt(currentSectorId, 10));
+    const originalSectorName = currentSector ? currentSector.name : "Сектор";
+
+    // Передаем весь обновленный пакет данных миссии на бэкенд (включая имя)
     const updatedData = {
-        name: newName,
+        name: originalSectorName, // ДОБАВИЛИ ОБЯЗАТЕЛЬНОЕ ПОЛЕ
         controllingFactionId: isNaN(newFactionId) ? 0 : newFactionId,
+        missionStatus: mStatus,
+        missionName: mName || "Разведывательная миссия",
         description: newDesc,
-        gmMarks: newMarks
+        gmMarks: newMarks,
+        files: updatedFiles
     };
 
     try {
@@ -340,14 +495,20 @@ async function saveSectorChanges() {
         });
 
         if (response.ok) {
-            alert("Данные сектора успешно синхронизированы с базой Neon Tech!");
-            loadMap();
+            alert("Параметры операции и файлы брифинга успешно обновлены в базе данных!");
+
+            const mapResp = await fetch('/api/map');
+            allSectors = await mapResp.json();
+            selectSector(parseInt(currentSectorId, 10));
         } else {
-            alert("Ошибка сервера при сохранении данных.");
+            // Читаем точный текст ошибки от валидатора бэкенда, если что-то пойдет не так
+            const errDetails = await response.text();
+            console.error("Детали ошибки 400 от сервера:", errDetails);
+            alert(`Сервер отклонил сохранение данных сектора (400): ${errDetails}`);
         }
     } catch (e) {
-        console.error("Ошибка при сохранении сектора:", e);
-        alert("Критическая ошибка связи с сервером.");
+        console.error("Ошибка сохранения сектора:", e);
+        alert("Сбой сети при отправке пакета изменений.");
     }
 }
 

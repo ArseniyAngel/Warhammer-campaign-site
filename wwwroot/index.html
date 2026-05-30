@@ -53,59 +53,96 @@
                 </div>
             </section>
 
-            <section class="info-section">
-                <h2>Информация о секторе</h2>
-                <div id="sector-details">
-                    <p class="placeholder-text">Выберите сектор на карте, чтобы посмотреть детали.</p>
+            <section class="info-section"
+                style="flex: 1; background: #262626; padding: 20px; border-radius: 8px; border: 1px solid #444; min-height: 400px;">
+                <h2
+                    style="font-family: 'Courier New', monospace; color: #ff9800; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0;">
+                    Активные миссии сектора
+                </h2>
+                <div id="sector-missions-container">
+                    <p class="placeholder-text" style="color: #666; font-style: italic;">
+                        Выберите сектор или боевую зону на карте, чтобы узнать информацию о секторе.
+                    </p>
                 </div>
             </section>
         </main>
     </div>
 
-    <section class="admin-panel card" id="admin-panel" style="display: none;">
+    <section class="admin-panel card" id="admin-panel" style="display: none; margin-top: 30px;">
         <h2 class="admin-title">
             <span>Командный Терминал ГМ</span>
-            <span class="admin-subtitle">Режим редактирования секторов</span>
+            <span class="admin-subtitle">Управление миссиями сектора</span>
         </h2>
 
         <div class="admin-current-object">
             <input type="hidden" id="admin-sector-id">
-
-            <p>Текущий объект:
-                <input type="text" id="admin-sector-name-input" class="admin-input"
-                    style="display: inline-block; width: auto; max-width: 300px; font-size: 16px; font-weight: bold; color: #ff9800; background: transparent; border: none; border-bottom: 1px dashed #ff9800; padding: 0 5px; margin: 0; font-family: monospace; outline: none;"
-                    value="не выбран">
-            </p>
+            <p>Выбранный сектор: <strong id="admin-sector-name-label">не выбран</strong></p>
         </div>
+
         <div class="admin-grid">
             <div class="admin-field-group">
-                <label class="label-orange">Сменить фракцию-контроллер:</label>
+                <label class="label-orange">Сменить фракцию-контроллер сектора:</label>
                 <select id="admin-faction-select" class="admin-input">
                     <option value="0" selected>Нейтральная земля</option>
                     <option value="1">Кровавые Ангелы</option>
                     <option value="2">Некроны</option>
                     <option value="3">Аэлдари</option>
                     <option value="4">Астра Милитарум</option>
-
                 </select>
             </div>
 
             <div class="admin-field-group">
-                <label class="label-blue">Разведданные / Метки на карте:</label>
-                <input type="text" id="admin-sector-marks" class="admin-input input-blue"
-                    placeholder="Пример: Замечена артиллерия / Вход заблокирован">
+                <label class="label-blue">Статус миссии в секторе:</label>
+                <select id="admin-mission-status" class="admin-input">
+                    <option value="active">Активна (Доступна игрокам)</option>
+                    <option value="hidden">Засекречена (Скрыта)</option>
+                    <option value="completed">Завершена (Архив)</option>
+                </select>
             </div>
 
             <div class="admin-field-group full-width">
-                <label class="label-gray">Оперативная сводка ландшафта (Лор для игроков):</label>
+                <label class="label-orange">Название боевой операции / Миссии:</label>
+                <input type="text" id="admin-mission-name" class="admin-input"
+                    placeholder="Пример: Операция 'Шторм пустыни'">
+            </div>
+
+            <div class="admin-field-group full-width">
+                <label class="label-gray">Брифинг, правила и описание миссии (Markdown/Текст):</label>
                 <textarea id="admin-sector-desc" class="admin-input textarea-lore"
-                    placeholder="Введите особенности ландшафта, климат или историческую сводку этого сектора..."></textarea>
+                    placeholder="Пропишите цели, условия победы и особенности ландшафта миссии..."></textarea>
+            </div>
+
+            <div class="admin-field-group full-width">
+                <label class="label-blue">Краткие тактические метки фронта:</label>
+                <input type="text" id="admin-sector-marks" class="admin-input input-blue"
+                    placeholder="Пример: ПВО противника активно / Ограничение видимости">
+            </div>
+
+            <div class="admin-field-group full-width" style="border-top: 1px dashed #444; padding-top: 15px;">
+                <label class="label-orange"
+                    style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span>Документы брифинга и карты высот:</span>
+                    <button type="button" onclick="addAdminFileRow('', '')"
+                        style="padding: 4px 12px; font-size: 12px; background: rgba(255,152,0,0.2); border: 1px solid #ff9800; color: #ff9800; cursor: pointer; border-radius: 4px;">+
+                        Добавить документ</button>
+                </label>
+                <div id="admin-files-container"
+                    style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%;">
+                </div>
+            </div>
+
+            <div class="admin-field-group full-width" style="border-top: 1px dashed #444; padding-top: 15px;">
+                <label class="label-blue">Заявки и голоса игроков на эту миссию (Видно только ГМ):</label>
+                <div id="admin-votes-log"
+                    style="background: #0d0f12; padding: 12px; border-radius: 4px; color: #aaa; font-family: monospace; min-height: 40px; border: 1px solid #333; margin-top: 5px; box-sizing: border-box; width: 100%;">
+                    Выберите сектор, чтобы увидеть список готовых к высадке игроков.
+                </div>
             </div>
         </div>
 
-        <div class="admin-actions">
+        <div class="admin-actions" style="margin-top: 15px;">
             <button class="btn-gm-submit" onclick="saveSectorChanges()">
-                Изменить информацию о секторе
+                Сохранить параметры миссии сектopa
             </button>
         </div>
     </section>

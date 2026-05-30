@@ -14,30 +14,6 @@ namespace CampaignApp.Controllers
 
         public HubController(CampaignContext context) { _context = context; }
 
-        // ================= МИССИИ =================
-        [HttpGet("missions")]
-        public IActionResult GetMissions() => Ok(_context.Missions.ToList());
-
-        [HttpPost("missions")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult AddMission([FromBody] CampaignMission mission)
-        {
-            _context.Missions.Add(mission);
-            _context.SaveChanges();
-            return Ok(mission);
-        }
-
-        [HttpDelete("missions/{id}")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult DeleteMission(int id)
-        {
-            var mission = _context.Missions.Find(id);
-            if (mission == null) return NotFound();
-            _context.Missions.Remove(mission);
-            _context.SaveChanges();
-            return Ok();
-        }
-
         // ================= FAQ =================
         [HttpGet("faq")]
         public IActionResult GetFaqs() => Ok(_context.Faqs.ToList());

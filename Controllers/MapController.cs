@@ -4,6 +4,7 @@ using CampaignApp.Data;
 using CampaignApp.Models;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace CampaignApp.Controllers
@@ -14,69 +15,111 @@ namespace CampaignApp.Controllers
     {
         private readonly CampaignContext _context;
 
-        // Внедряем контекст базы данных через конструктор
         public MapController(CampaignContext context)
         {
             _context = context;
         }
 
-        // 1. МЕТОД ПОЛУЧЕНИЯ КАРТЫ: Берёт абсолютно ВСЕ сектора напрямую из БД
+        // 1. МЕТОД ПОЛУЧЕНИЯ КАРТЫ
         [HttpGet]
-        public ActionResult<IEnumerable<Sector>> GetMap()
+        public ActionResult<IEnumerable<object>> GetMap()
         {
             var dbSectors = _context.Sectors.ToList();
-            return Ok(dbSectors);
+            bool isAdmin = User.Identity.IsAuthenticated && User.IsInRole("Admin");
+
+            var response = dbSectors.Select(s => new {
+                s.Id,
+                s.Name,
+                s.ControllingFactionId,
+                s.Description,
+                s.MissionName,
+                s.MissionStatus,
+                s.Files,
+                s.Coordinates,
+                s.GMMarks, // Заметки ГМа видны всем
+                // Список голосов отдаем только админу, для игроков — пустой массив
+                VoterList = isAdmin ? (s.VoterListJson ?? "[]") : "[]" 
+            });
+
+            return Ok(response);
         }
 
-        // Вспомогательный класс (DTO) для безопасного приёма изменений из ГМ-панели
+        public class MissionFileDto
+        {
+            [JsonPropertyName("name")] public string Name { get; set; }
+            [JsonPropertyName("url")] public string Url { get; set; }
+        }
+
         public class SectorUpdateDto
         {
-            // ДОБАВИЛИ: Поле для приёма нового имени от фронтенда
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-
-            [JsonPropertyName("controllingFactionId")]
-            public int ControllingFactionId { get; set; }
-
-            [JsonPropertyName("description")]
-            public string Description { get; set; } = "";
-
-            [JsonPropertyName("gmMarks")]
-            public string GMMarks { get; set; } = "";
+            [JsonPropertyName("name")] public string Name { get; set; }
+            [JsonPropertyName("controllingFactionId")] public int ControllingFactionId { get; set; }
+            [JsonPropertyName("description")] public string Description { get; set; } = "";
+            [JsonPropertyName("gmMarks")] public string GMMarks { get; set; } = "";
+            [JsonPropertyName("missionName")] public string MissionName { get; set; } = "Разведывательная миссия";
+            [JsonPropertyName("missionStatus")] public string MissionStatus { get; set; } = "active";
+            [JsonPropertyName("files")] public List<MissionFileDto> Files { get; set; } = new List<MissionFileDto>();
         }
 
-        // 2. МЕТОД ОБНОВЛЕНИЯ СЕКТОРА ГМ-ОМ
+        // 2. МЕТОД ОБНОВЛЕНИЯ СЕКТОРА
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public IActionResult UpdateSector(int id, [FromBody] SectorUpdateDto dto)
         {
-            // Ищем сектор в БД
             var sector = _context.Sectors.Find(id);
-            if (sector == null) return NotFound("Сектор не найден в тактическом логе.");
+            if (sector == null) return NotFound("Сектор не найден.");
 
-            // ОБНОВЛЯЕМ НАЗВАНИЕ СЕКТОРА:
-            // Если ГМ прислал не пустое имя, перезаписываем его
-            if (!string.IsNullOrWhiteSpace(dto.Name))
-            {
-                sector.Name = dto.Name.Trim();
-            }
+            sector.Name = !string.IsNullOrWhiteSpace(dto.Name) ? dto.Name.Trim() : sector.Name;
+            sector.ControllingFactionId = dto.ControllingFactionId == 0 ? (int?)null : dto.ControllingFactionId;
+            sector.Description = dto.Description ?? "";
+            sector.GMMarks = dto.GMMarks ?? "";
+            sector.MissionName = dto.MissionName ?? "Разведывательная миссия";
+            sector.MissionStatus = dto.MissionStatus ?? "active";
 
-            // Перевод фракции в null, если выбрана "Нейтральная земля" (0)
-            if (dto.ControllingFactionId == 0)
-            {
-                sector.ControllingFactionId = null;
-            }
-            else
-            {
-                sector.ControllingFactionId = dto.ControllingFactionId;
-            }
-
-            // Обновляем остальные текстовые поля ГМ
-            sector.Description = dto.Description;
-            // Твой старый комментарий про SQLite меняем мысленно на: Теперь Neon (Postgres) сохранит всё в облако!
-            sector.GMMarks = dto.GMMarks;
+            sector.FilesJson = dto.Files != null ? JsonSerializer.Serialize(dto.Files) : "[]";
 
             _context.SaveChanges();
+            return Ok(sector);
+        }
+
+        // 3. МЕТОД ГОЛОСОВАНИЯ (Чистая логика без GMMarks)
+        [HttpPost("{id}/vote")]
+        [Authorize(Roles = "Player,Admin")]
+        public IActionResult VoteForSector(int id)
+        {
+            var sector = _context.Sectors.Find(id);
+            if (sector == null) return NotFound("Сектор не найден.");
+
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+
+            // БЕЗОПАСНОЕ ЧТЕНИЕ:
+            List<string> voters;
+            try 
+            {
+                string json = sector.VoterListJson;
+                // Если поле пустое, null или содержит пробелы — принудительно создаем пустой массив
+                if (string.IsNullOrWhiteSpace(json)) 
+                {
+                    voters = new List<string>();
+                }
+                else 
+                {
+                    voters = JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+                }
+            }
+            catch 
+            {
+                // Если в базе мусор, сбрасываем список
+                voters = new List<string>();
+            }
+
+            if (!voters.Contains(username))
+            {
+                voters.Add(username);
+                sector.VoterListJson = JsonSerializer.Serialize(voters);
+                _context.SaveChanges();
+            }
 
             return Ok(sector);
         }

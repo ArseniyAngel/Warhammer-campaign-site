@@ -3,6 +3,7 @@ using System;
 using CampaignApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CampaignApp.Migrations
 {
     [DbContext(typeof(CampaignContext))]
-    partial class CampaignContextModelSnapshot : ModelSnapshot
+    [Migration("20260530215620_1")]
+    partial class _1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,10 +256,6 @@ namespace CampaignApp.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ResourceType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("VoterListJson")
                         .IsRequired()
                         .HasColumnType("text");
 
