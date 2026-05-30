@@ -153,12 +153,12 @@ D:\Wahasite\CampaignApp\bin\Debug\net10.0\CampaignApp.staticwebassets.runtime.js
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\edj67vopvo-{0}-235bhurwih-235bhurwih.gz
 D:\Wahasite\CampaignApp\bin\Debug\net10.0\campaign.db
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\CampaignApp.sourcelink.json
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\7t279f5xc7-{0}-wtmuitmo4d-wtmuitmo4d.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\wbld6p423d-{0}-2cj9p9dg9e-2cj9p9dg9e.gz
 D:\Wahasite\CampaignApp\bin\Debug\net10.0\Npgsql.dll
 D:\Wahasite\CampaignApp\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\web5thtpog-{0}-t7cy4lzh7v-t7cy4lzh7v.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\ejaxmfdjwe-{0}-ae094fc5vm-ae094fc5vm.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\5zh16fmg5j-{0}-n5qjavri0k-n5qjavri0k.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\00mofq31y1-{0}-46jzrd1pr8-46jzrd1pr8.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\w7ok8vb3f2-{0}-addb4a0p32-addb4a0p32.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\w7ok8vb3f2-{0}-vdxsack05q-vdxsack05q.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\5zh16fmg5j-{0}-wov61916xa-wov61916xa.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\7t279f5xc7-{0}-4hpamwuoz9-4hpamwuoz9.gz

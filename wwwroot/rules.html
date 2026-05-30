@@ -162,17 +162,17 @@
 
     <div class="container">
         <header>
-            <h1>📡 Стратегический Инфо-Хаб</h1>
-            <a href="index.html" class="back-btn">⬅️ К тактической карте</a>
+            <h1>Стратегический Инфо-Хаб</h1>
+            <a href="index.html" class="back-btn">Назад</a>
         </header>
 
         <div class="section-card">
-            <h2>📜 Основной регламент кампании</h2>
+            <h2>Основной регламент кампании</h2>
             <div id="regulations-text" style="white-space: pre-wrap; line-height: 1.6; margin-bottom: 15px;">Загрузка...
             </div>
 
             <div id="file-container" class="file-download-box">
-                <a id="file-link" href="#" target="_blank" class="file-btn">📥 Скачать официальный PDF-рулбук
+                <a id="file-link" href="#" target="_blank" class="file-btn"> Скачать официальный PDF-рулбук
                     кампании</a>
             </div>
 
@@ -180,7 +180,7 @@
                 <h3>Редактировать регламент (ГМ)</h3>
                 <textarea id="input-reg-text" placeholder="Текст регламента..."></textarea>
                 <input type="text" id="input-reg-file" placeholder="Прямая ссылка на файл (Google Drive/Discord/etc.)">
-                <button class="action-btn" onclick="saveRegulations()">💾 Сохранить изменения</button>
+                <button class="action-btn" onclick="saveRegulations()">Сохранить изменения</button>
             </div>
         </div>
 
@@ -193,7 +193,7 @@
                 <input type="text" id="mission-title" placeholder="Название миссии">
                 <textarea id="mission-desc" placeholder="Описание и задачи..."></textarea>
                 <input type="text" id="mission-reward" placeholder="Награда за выполнение">
-                <button class="action-btn" onclick="addMission()">➕ Опубликовать миссию</button>
+                <button class="action-btn" onclick="addMission()">Опубликовать миссию</button>
             </div>
         </div>
 
@@ -205,7 +205,7 @@
                 <h3>Добавить карточку FAQ (ГМ)</h3>
                 <input type="text" id="faq-question" placeholder="Вопрос">
                 <textarea id="faq-answer" placeholder="Ответ..."></textarea>
-                <button class="action-btn" onclick="addFaq()">➕ Добавить FAQ</button>
+                <button class="action-btn" onclick="addFaq()">Добавить FAQ</button>
             </div>
         </div>
     </div>
@@ -274,7 +274,7 @@
                     <button class="delete-btn" style="display: ${isAdmin ? 'block' : 'none'}" onclick="deleteMission(${m.id})">❌ Удалить</button>
                     <h3>${m.title}</h3>
                     <p style="white-space: pre-wrap;">${m.description}</p>
-                    ${m.reward ? `<p class="reward-text">🎁 Бонус: ${m.reward}</p>` : ''}
+                    ${m.reward ? `<p class="reward-text">Бонус: ${m.reward}</p>` : ''}
                 </div>`;
             });
         }

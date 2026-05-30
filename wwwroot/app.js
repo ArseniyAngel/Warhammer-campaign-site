@@ -28,7 +28,7 @@ function renderAuthBar() {
             <input type="text" id="login-username" placeholder="Логин">
             <input type="password" id="login-password" placeholder="Пароль">
             <button onclick="handleLogin()">Войти</button>
-            <button onclick="handleRegister()" style="background: #2b579a;">Рег</button>
+            <button onclick="handleRegister()" style="background: #2b579a;">Регистрация</button>
         `;
     } else {
         const roleName = currentUser.role === "Admin" ? "Гейм-Мастер" : "Игрок";

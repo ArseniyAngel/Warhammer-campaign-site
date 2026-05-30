@@ -637,3 +637,76 @@ select.admin-input {
         margin-bottom: 12px !important;
     }
 }
+
+/* Контейнер панели авторизации (если его еще нет в CSS) */
+.auth-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 20px;
+    background: #0c0c0e;
+    border-bottom: 1px solid #222;
+}
+
+/* Группировка инпутов */
+.auth-inputs {
+    display: flex;
+    gap: 8px;
+}
+
+.auth-inputs input {
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 10px;
+    font-family: monospace;
+    font-size: 13px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.auth-inputs input:focus {
+    border-color: #ff9800;
+    /* Оранжевый акцент при фокусе в стиле ГМ-панели */
+}
+
+/* Группировка кнопок */
+.auth-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Общие стили для кнопок авторизации */
+.auth-buttons button {
+    padding: 6px 14px;
+    font-weight: bold;
+    font-size: 13px;
+    font-family: monospace;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+/* Кнопка Войти */
+.btn-auth-login {
+    background: #444;
+    color: #fff;
+}
+
+.btn-auth-login:hover {
+    background: #555;
+}
+
+/* Кнопка Регистрация — теперь выглядит официально */
+.btn-auth-register {
+    background: #2b579a;
+    /* Твой синий цвет */
+    color: #fff;
+}
+
+.btn-auth-register:hover {
+    opacity: 0.9;
+}
