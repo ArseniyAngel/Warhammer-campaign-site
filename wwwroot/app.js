@@ -151,7 +151,7 @@ function renderMapLayout() {
     let isUnder = (currentLayer === 'underground');
 
     let svgHtml = `
-        <svg viewBox="0 0 800 600" width="100%" height="auto" style="background: #0f0f11; border-radius: 8px; border: 2px solid ${isUnder ? '#4db8ff' : '#444'};">
+        <svg viewBox="0 0 800 600" width="100%" style="background: #0f0f11; border-radius: 8px; border: 2px solid ${isUnder ? '#4db8ff' : '#444'};">
     `;
 
     // Выбор фоновой картинки в зависимости от слоя
@@ -256,83 +256,98 @@ let selectedSectorId = null;
 
 function selectSector(sectorId) {
     selectedSectorId = sectorId;
+
+    // Ищем сектор (бэкенд отдает строго id в нижнем регистре)
     const sector = allSectors.find(s => s.id === sectorId);
     if (!sector) return;
 
     const faction = getFactionData(sector.controllingFactionId);
     const descriptionText = sector.description || "Особых примет ландшафта не зарегистрировано.";
+    const currentMarks = sector.gmMarks || "";
 
-    let marksHtml = "";
-    if (sector.gmMarks && sector.gmMarks.trim() !== "") {
-        marksHtml = `
-            <div style="margin-top: 15px; padding: 10px; background: rgba(77, 184, 255, 0.1); border-left: 4px solid #4db8ff; color: #4db8ff;">
-                <strong>Тактические разведданные:</strong><br>
-                ${sector.gmMarks}
-            </div>
-        `;
-    }
-
+    // 1. Обновляем инфо-карточку для игроков
     const detailsContainer = document.getElementById('sector-details');
     if (detailsContainer) {
+        let marksHtml = "";
+        if (currentMarks.trim() !== "") {
+            marksHtml = `
+                <div style="margin-top: 15px; padding: 10px; background: rgba(77, 184, 255, 0.1); border-left: 4px solid #4db8ff; color: #4db8ff;">
+                    <strong>Тактические разведданные:</strong><br>
+                    ${currentMarks}
+                </div>
+            `;
+        }
+
         detailsContainer.innerHTML = `
             <h3>${sector.name}</h3>
             <p><strong>Статус контроля:</strong></p>
             <span class="faction-badge" style="background-color: ${faction.color}; color: #fff; padding: 5px 10px; border-radius: 4px; display: inline-block; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);">
                 ${faction.name}
             </span>
-            
             <p style="margin-top: 15px; line-height: 1.4; color: #ccc;">
                 <strong>Сводка ландшафта:</strong><br>${descriptionText}
             </p>
-
             ${marksHtml}
-
-            <p style="margin-top: 20px;"><small style="color: #555;">Системный ID: ${sector.id} | Тип: ${sector.isUnderground ? 'Подземелье' : 'Поверхность'}</small></p>
+            <p style="margin-top: 20px;"><small style="color: #555;">Системный ID: ${sectorId} | Тип: ${sector.isUnderground ? 'Подземелье' : 'Поверхность'}</small></p>
         `;
     }
 
-    const adminSectorName = document.getElementById('admin-sector-name');
+    // 2. Синхронизируем данные с инпутами в панели ГМ
+    const adminSectorIdInput = document.getElementById('admin-sector-id');
+    const adminSectorNameInput = document.getElementById('admin-sector-name-input');
     const adminFactionSelect = document.getElementById('admin-faction-select');
     const adminDesc = document.getElementById('admin-sector-desc');
     const adminMarks = document.getElementById('admin-sector-marks');
 
-    if (adminSectorName) adminSectorName.innerText = sector.name;
-    if (adminFactionSelect) adminFactionSelect.value = sector.controllingFactionId;
+    if (adminSectorIdInput) adminSectorIdInput.value = sectorId;
+    if (adminSectorNameInput) adminSectorNameInput.value = sector.name;
+    if (adminFactionSelect) adminFactionSelect.value = sector.controllingFactionId || 0;
     if (adminDesc) adminDesc.value = sector.description || "";
-    if (adminMarks) adminMarks.value = sector.gmMarks || "";
+    if (adminMarks) adminMarks.value = currentMarks;
 }
 
 async function saveSectorChanges() {
-    if (!selectedSectorId) {
+    const currentSectorId = document.getElementById('admin-sector-id').value;
+    if (!currentSectorId) {
         alert("Сначала выберите сектор на карте!");
         return;
     }
 
-    const newFactionId = parseInt(document.getElementById('admin-faction-select').value);
-    const newDesc = document.getElementById('admin-sector-desc').value;
-    const newMarks = document.getElementById('admin-sector-marks').value;
+    const newName = document.getElementById('admin-sector-name-input').value.trim();
+    if (!newName || newName === "не выбран") {
+        alert("Поле названия стратегического объекта не может быть пустым!");
+        return;
+    }
 
-    const updateData = {
-        controllingFactionId: newFactionId,
+    const factionSelectValue = document.getElementById('admin-faction-select').value;
+    const newMarks = document.getElementById('admin-sector-marks').value.trim();
+    const newDesc = document.getElementById('admin-sector-desc').value.trim();
+    const newFactionId = parseInt(factionSelectValue, 10);
+
+    // Чистый, боевой JSON без мусора
+    const updatedData = {
+        name: newName,
+        controllingFactionId: isNaN(newFactionId) ? 0 : newFactionId,
         description: newDesc,
         gmMarks: newMarks
     };
 
     try {
-        const response = await fetch(`/api/map/${selectedSectorId}`, {
+        const response = await fetch(`/api/map/${currentSectorId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData)
+            body: JSON.stringify(updatedData)
         });
 
         if (response.ok) {
-            alert("Данные успешно сохранены в командный терминал!");
+            alert("Данные сектора успешно синхронизированы с базой Neon Tech!");
             loadMap();
         } else {
-            alert("Не удалось сохранить изменения.");
+            alert("Ошибка сервера при сохранении данных.");
         }
-    } catch (error) {
-        console.error("Ошибка админки:", error);
+    } catch (e) {
+        console.error("Ошибка при сохранении сектора:", e);
+        alert("Критическая ошибка связи с сервером.");
     }
 }
 

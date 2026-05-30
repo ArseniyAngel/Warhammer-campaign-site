@@ -20,7 +20,7 @@ namespace CampaignApp.Controllers
             _context = context;
         }
 
-        // 1. МЕТОД ПОЛУЧЕНИЯ КАРТЫ: Теперь берёт абсолютно ВСЕ сектора напрямую из БД
+        // 1. МЕТОД ПОЛУЧЕНИЯ КАРТЫ: Берёт абсолютно ВСЕ сектора напрямую из БД
         [HttpGet]
         public ActionResult<IEnumerable<Sector>> GetMap()
         {
@@ -31,6 +31,10 @@ namespace CampaignApp.Controllers
         // Вспомогательный класс (DTO) для безопасного приёма изменений из ГМ-панели
         public class SectorUpdateDto
         {
+            // ДОБАВИЛИ: Поле для приёма нового имени от фронтенда
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
             [JsonPropertyName("controllingFactionId")]
             public int ControllingFactionId { get; set; }
 
@@ -43,31 +47,38 @@ namespace CampaignApp.Controllers
 
         // 2. МЕТОД ОБНОВЛЕНИЯ СЕКТОРА ГМ-ОМ
         [HttpPut("{id}")]
-[Authorize(Roles = "Admin")]
-public IActionResult UpdateSector(int id, [FromBody] SectorUpdateDto dto)
-{
-    // Ищем сектор в БД
-    var sector = _context.Sectors.Find(id);
-    if (sector == null) return NotFound("Сектор не найден в тактическом логе.");
+        [Authorize(Roles = "Admin")]
+        public IActionResult UpdateSector(int id, [FromBody] SectorUpdateDto dto)
+        {
+            // Ищем сектор в БД
+            var sector = _context.Sectors.Find(id);
+            if (sector == null) return NotFound("Сектор не найден в тактическом логе.");
 
-    // ИСПРАВЛЕНИЕ: Если ГМ выбрал "Нейтральная земля" (0), записываем null
-    if (dto.ControllingFactionId == 0)
-    {
-        sector.ControllingFactionId = null;
-    }
-    else
-    {
-        sector.ControllingFactionId = dto.ControllingFactionId;
-    }
+            // ОБНОВЛЯЕМ НАЗВАНИЕ СЕКТОРА:
+            // Если ГМ прислал не пустое имя, перезаписываем его
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+            {
+                sector.Name = dto.Name.Trim();
+            }
 
-    // Обновляем остальные текстовые поля ГМ
-    sector.Description = dto.Description;
-    sector.GMMarks = dto.GMMarks;
+            // Перевод фракции в null, если выбрана "Нейтральная земля" (0)
+            if (dto.ControllingFactionId == 0)
+            {
+                sector.ControllingFactionId = null;
+            }
+            else
+            {
+                sector.ControllingFactionId = dto.ControllingFactionId;
+            }
 
-    // Теперь SQLite сохранит изменения без ошибок связей!
-    _context.SaveChanges();
+            // Обновляем остальные текстовые поля ГМ
+            sector.Description = dto.Description;
+            // Твой старый комментарий про SQLite меняем мысленно на: Теперь Neon (Postgres) сохранит всё в облако!
+            sector.GMMarks = dto.GMMarks;
 
-    return Ok(sector);
-}
+            _context.SaveChanges();
+
+            return Ok(sector);
+        }
     }
 }

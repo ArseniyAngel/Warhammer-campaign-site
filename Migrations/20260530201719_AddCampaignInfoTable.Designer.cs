@@ -3,6 +3,7 @@ using System;
 using CampaignApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CampaignApp.Migrations
 {
     [DbContext(typeof(CampaignContext))]
-    partial class CampaignContextModelSnapshot : ModelSnapshot
+    [Migration("20260530201719_AddCampaignInfoTable")]
+    partial class AddCampaignInfoTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,27 +24,6 @@ namespace CampaignApp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("CampaignApp.Models.CampaignFaq", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Faqs");
-                });
 
             modelBuilder.Entity("CampaignApp.Models.CampaignInfo", b =>
                 {
@@ -52,41 +34,9 @@ namespace CampaignApp.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Key");
 
                     b.ToTable("CampaignInfos");
-                });
-
-            modelBuilder.Entity("CampaignApp.Models.CampaignMission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Reward")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Missions");
                 });
 
             modelBuilder.Entity("CampaignApp.Models.CrusadeTrait", b =>

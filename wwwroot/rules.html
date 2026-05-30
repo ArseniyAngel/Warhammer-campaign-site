@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информационный Хаб Кампании</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        body {
+            background-color: #0d0d11;
+            color: #e0e0e6;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #ff9800;
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: #222;
+            color: #ff9800;
+            border: 1px solid #ff9800;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .back-btn:hover {
+            background: #ff9800;
+            color: #000;
+        }
+
+        .section-card {
+            background: #121216;
+            border: 1px solid #2a2a35;
+            border-radius: 6px;
+            padding: 25px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .section-card h2 {
+            color: #ff9800;
+            margin-top: 0;
+            border-bottom: 1px solid #2a2a35;
+            padding-bottom: 10px;
+        }
+
+        /* Кнопка скачивания файла */
+        .file-download-box {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .file-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4db8ff;
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .file-btn:hover {
+            background: #2299ee;
+        }
+
+        /* Динамические карточки */
+        .item-card {
+            background: #17171e;
+            border: 1px solid #222;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .mission-active {
+            border-left: 4px solid #4db8ff;
+        }
+
+        .reward-text {
+            color: #4db8ff;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Кнопка удаления для ГМ */
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+
+        /* Админские панели ввода */
+        .gm-panel {
+            display: none;
+            background: #1a130b;
+            border: 1px dashed #ff9800;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            background: #111;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: #ff9800;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>📡 Стратегический Инфо-Хаб</h1>
+            <a href="index.html" class="back-btn">⬅️ К тактической карте</a>
+        </header>
+
+        <div class="section-card">
+            <h2>📜 Основной регламент кампании</h2>
+            <div id="regulations-text" style="white-space: pre-wrap; line-height: 1.6; margin-bottom: 15px;">Загрузка...
+            </div>
+
+            <div id="file-container" class="file-download-box">
+                <a id="file-link" href="#" target="_blank" class="file-btn">📥 Скачать официальный PDF-рулбук
+                    кампании</a>
+            </div>
+
+            <div id="gm-reg-panel" class="gm-panel">
+                <h3>Редактировать регламент (ГМ)</h3>
+                <textarea id="input-reg-text" placeholder="Текст регламента..."></textarea>
+                <input type="text" id="input-reg-file" placeholder="Прямая ссылка на файл (Google Drive/Discord/etc.)">
+                <button class="action-btn" onclick="saveRegulations()">💾 Сохранить изменения</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🎯 Текущие боевые задачи</h2>
+            <div id="missions-list"></div>
+
+            <div id="gm-mission-panel" class="gm-panel">
+                <h3>Добавить новую миссию (ГМ)</h3>
+                <input type="text" id="mission-title" placeholder="Название миссии">
+                <textarea id="mission-desc" placeholder="Описание и задачи..."></textarea>
+                <input type="text" id="mission-reward" placeholder="Награда за выполнение">
+                <button class="action-btn" onclick="addMission()">➕ Опубликовать миссию</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>❓ Часто задаваемые вопросы (FAQ)</h2>
+            <div id="faq-list"></div>
+
+            <div id="gm-faq-panel" class="gm-panel">
+                <h3>Добавить карточку FAQ (ГМ)</h3>
+                <input type="text" id="faq-question" placeholder="Вопрос">
+                <textarea id="faq-answer" placeholder="Ответ..."></textarea>
+                <button class="action-btn" onclick="addFaq()">➕ Добавить FAQ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdmin = false;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await checkRole();
+            loadRegulations();
+            loadMissions();
+            loadFaqs();
+        });
+
+        async function checkRole() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user.role === "Admin") {
+                        isAdmin = true;
+                        document.querySelectorAll('.gm-panel').forEach(p => p.style.display = "block");
+                    }
+                }
+            } catch (e) { }
+        }
+
+        // --- РЕГЛАМЕНТ ---
+        async function loadRegulations() {
+            const res = await fetch('/api/hub/regulations');
+            const data = await res.json();
+            document.getElementById('regulations-text').innerText = data.content;
+            document.getElementById('input-reg-text').value = data.content;
+            document.getElementById('input-reg-file').value = data.fileUrl;
+
+            if (data.fileUrl) {
+                document.getElementById('file-container').style.display = "block";
+                document.getElementById('file-link').href = data.fileUrl;
+            } else {
+                document.getElementById('file-container').style.display = "none";
+            }
+        }
+
+        async function saveRegulations() {
+            const content = document.getElementById('input-reg-text').value;
+            const fileUrl = document.getElementById('input-reg-file').value;
+            await fetch('/api/hub/regulations', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: 'regulations', content, fileUrl })
+            });
+            alert("Регламент обновлен!");
+            loadRegulations();
+        }
+
+        // --- МИССИИ ---
+        async function loadMissions() {
+            const res = await fetch('/api/hub/missions');
+            const missions = await res.json();
+            const list = document.getElementById('missions-list');
+            list.innerHTML = missions.length === 0 ? "<p>Нет активных миссий.</p>" : "";
+
+            missions.forEach(m => {
+                list.innerHTML += `
+                <div class="item-card mission-active">
+                    <button class="delete-btn" style="display: ${isAdmin ? 'block' : 'none'}" onclick="deleteMission(${m.id})">❌ Удалить</button>
+                    <h3>${m.title}</h3>
+                    <p style="white-space: pre-wrap;">${m.description}</p>
+                    ${m.reward ? `<p class="reward-text">🎁 Бонус: ${m.reward}</p>` : ''}
+                </div>`;
+            });
+        }
+
+        async function addMission() {
+            const title = document.getElementById('mission-title').value;
+            const description = document.getElementById('mission-desc').value;
+            const reward = document.getElementById('mission-reward').value;
+
+            await fetch('/api/hub/missions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, reward, isActive: true })
+            });
+            loadMissions();
+        }
+
+        async function deleteMission(id) {
+            if (confirm("Удалить эту стратегическую миссию?")) {
+                await fetch(`/api/hub/missions/${id}`, { method: 'DELETE' });
+                loadMissions();
+            }
+        }
+
+        // --- FAQ ---
+        async function loadFaqs() {
+            const res = await fetch('/api/hub/faq');
+            const faqs = await res.json();
+            const list = document.getElementById('faq-list');
+            list.innerHTML = faqs.length === 0 ? "<p>Вопросов пока нет.</p>" : "";
+
+            faqs.forEach(f => {
+                list.innerHTML += `
+                <div class="item-card">
+                    <button class="delete-btn" style="display: ${isAdmin ? 'block' : 'none'}" onclick="deleteFaq(${f.id})">❌ Удалить</button>
+                    <strong style="color: #ff9800; display:block; margin-bottom:8px;">Вопрос: ${f.question}</strong>
+                    <p style="margin:0; color:#ccc; white-space: pre-wrap;">Ответ: ${f.answer}</p>
+                </div>`;
+            });
+        }
+
+        async function addFaq() {
+            const question = document.getElementById('faq-question').value;
+            const answer = document.getElementById('faq-answer').value;
+            await fetch('/api/hub/faq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, answer })
+            });
+            loadFaqs();
+        }
+
+        async function deleteFaq(id) {
+            if (confirm("Удалить эту карточку FAQ?")) {
+                await fetch(`/api/hub/faq/${id}`, { method: 'DELETE' });
+                loadFaqs();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations; // ДОБАВИЛИ ЭТУ СТРОЧКУ
 using System.Text.Json.Serialization;
 
 namespace CampaignApp.Models
@@ -5,9 +6,11 @@ namespace CampaignApp.Models
     public class Sector
     {
         public int Id { get; set; }
+        
+        [Required] // Теперь компилятор поймет, что это обязательное поле
         public string Name { get; set; } = "";
         
-        // ID фракции
+        // ID фракции (nullable, может быть пустым — это супер)
         public int? ControllingFactionId { get; set; }
         
         // НАВИГАЦИОННОЕ СВОЙСТВО

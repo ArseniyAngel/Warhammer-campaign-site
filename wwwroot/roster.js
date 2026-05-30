@@ -50,6 +50,13 @@ async function loadMyRoster() {
         const data = await response.json();
         mySquads = data.squads || [];
 
+        // Инициализируем флаг активности для каждого юнита (по умолчанию все активны)
+        mySquads.forEach(s => {
+            if (s.isActive === undefined) {
+                s.isActive = true;
+            }
+        });
+
         // Проверка флага администратора из базы данных
         if (data.isGMSession === true) {
             isUserAdminFromDB = true;
@@ -89,104 +96,145 @@ async function loadMyRoster() {
             resourceNameLabel.innerText = data.pointsName || "Ресурсы Снабжения";
         }
 
-        // Подсчет полной стоимости текущего ростера
+        // Рендерим ростер и обновляем счетчик очков армии
+        renderSquadsList(data);
+
+    } catch (err) {
+        console.error("Критический сбой чтения ростера:", err);
+    }
+}
+
+/**
+ * Изолированная функция отрисовки карточек ростера.
+ * Принимает data с сервера для сохранения контекста имени валюты и фракции.
+ */
+function renderSquadsList(data) {
+    const squadListContainer = document.getElementById('my-squads-list');
+    if (!squadListContainer) return;
+
+    if (mySquads.length === 0) {
+        squadListContainer.innerHTML = "<p style='color: #666; font-style: italic; padding: 20px;'>Ваш ростер пуст. Добавьте первый отряд слева!</p>";
+
         const totalPtsLabel = document.getElementById('total-army-pts');
-        if (totalPtsLabel) {
-            const totalPoints = mySquads.reduce((sum, s) => sum + (s.pointsCost || 0), 0);
-            totalPtsLabel.innerText = totalPoints;
-        }
+        if (totalPtsLabel) totalPtsLabel.innerText = 0;
+        return;
+    }
 
-        // Отрисовка списка отрядов на фронтенде
-        const squadListContainer = document.getElementById('my-squads-list');
-        if (squadListContainer) {
-            if (mySquads.length === 0) {
-                squadListContainer.innerHTML = "<p style='color: #666; font-style: italic; padding: 20px;'>Ваш ростер пуст. Добавьте первый отряд слева!</p>";
-                return;
-            }
+    // Подсчет полной стоимости текущего ростера с учетом только выделенных (isActive) отрядов
+    const totalPtsLabel = document.getElementById('total-army-pts');
+    if (totalPtsLabel) {
+        const totalPoints = mySquads.reduce((sum, s) => sum + (s.isActive ? (s.pointsCost || 0) : 0), 0);
+        totalPtsLabel.innerText = totalPoints;
+    }
 
-            squadListContainer.innerHTML = mySquads.map(s => {
-                const uType = s.unitType || "Infantry";
-                const cName = s.customName || "Без имени";
-                const typeInfo = s.type || "";
-                const pCost = s.pointsCost || 0;
-                const bCost = s.basePointsCost || 0;
+    squadListContainer.innerHTML = mySquads.map(s => {
+        const uType = s.unitType || "Infantry";
+        const cName = s.customName || "Без имени";
+        const typeInfo = s.type || "";
+        const pCost = s.pointsCost || 0;
+        const bCost = s.basePointsCost || 0;
 
-                let upgradesHtml = s.upgrades && s.upgrades.length > 0
-                    ? s.upgrades.map(u => {
-                        // 1. Берем сырое описание из БД
-                        let cleanDescription = u.description || "Нет описания";
-
-                        // 2. Очищаем Markdown-звездочки (**текст** или *текст* -> текст) для корректного отображения в title
-                        cleanDescription = cleanDescription.replace(/\*\*|\*/g, "");
-
-                        // 3. Экранируем кавычки, чтобы они не ломали HTML-атрибут
-                        cleanDescription = cleanDescription.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-                        // Возвращаем бейдж со стандартным атрибутом title
-                        return `
-            <span class="badge upgrade" 
-                  style="background: rgba(77,184,255,0.1); color: #4db8ff; border: 1px solid rgba(77,184,255,0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px; cursor: help;" 
-                  title="${cleanDescription}">
-                ${u.name} (+${u.ptsModifier} pts)
-            </span>
-        `;
-                    }).join('')
-                    : "<span style='color:#555; font-style:italic; font-size:0.85rem;'>Модернизаций нет</span>";
-                let scarsHtml = s.scars && s.scars.length > 0
-                    ? s.scars.map(sc => `<span class="badge scar" style="background: rgba(229,57,53,0.1); color: #e53935; border: 1px solid rgba(229,57,53,0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px;" title="${sc.description || ''}">Шрам: ${sc.id}</span>`).join('')
-                    : "";
-
-                const availableUpgradesForShop = dbTraits.filter(t => {
-                    if (t.type !== "Upgrade") return false;
-                    const factionMatch = (t.factionName === data.factionName || t.factionName === "All");
-                    const typeMatch = (t.unitTypeRestriction === "All" || t.unitTypeRestriction.includes(typeInfo));
-                    const alreadyHas = (s.upgrades || []).some(up => up.id === t.id);
-
-                    return factionMatch && typeMatch && !alreadyHas;
-                });
-
-                let shopDropdownHtml = "";
-                if (availableUpgradesForShop.length > 0) {
-                    // Найди этот кусок в loadMyRoster и замени стиль контейнера на flex-wrap: wrap
-                    shopDropdownHtml = `
-    <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #2c3542; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-        <select id="shop-${s.id}" style="flex: 1; min-width: 200px; padding: 8px; background: #0c0f13; color: #fff; border: 1px solid #3a4454; font-size: 0.85rem; border-radius: 4px;">
-            <option value="0">-- Купить модернизацию фракции --</option>
-            ${availableUpgradesForShop.map(t => `<option value="${t.id}">[Цена: ${t.fractionPointsCost} ${data.pointsName || 'ОФ'}] ${t.name} (+${t.ptsModifier} pts)</option>`).join('')}
-        </select>
-        <button onclick="buyUpgrade(${s.id})" style="padding: 8px 15px; background: #4db8ff; color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; min-width: 80px;">Купить</button>
-    </div>
-`;
-                } else {
-                    shopDropdownHtml = `<p style="color: #555; font-size: 0.8rem; font-style: italic; margin-top: 10px;">Доступных уникальных улучшений фракции нет.</p>`;
-                }
+        let upgradesHtml = s.upgrades && s.upgrades.length > 0
+            ? s.upgrades.map(u => {
+                let cleanDescription = u.description || "Нет описания";
+                cleanDescription = cleanDescription.replace(/\*\*|\*/g, "");
+                cleanDescription = cleanDescription.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
                 return `
-                    <div class="card squad-card" style="margin-bottom: 15px; background: #13171e; border: 1px solid #232d38; padding: 15px; border-radius: 6px; box-sizing: border-box;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232d38; padding-bottom: 8px; margin-bottom: 10px;">
-                            <div>
-                                <h3 style="margin:0; color:#ff9800; font-size: 1.15rem;">${cName}</h3>
-                                <small style="color:#888;">${uType} [${typeInfo}]</small>
-                            </div>
-                            <div style="text-align: right;">
-                                <span class="pts-tag" style="background: #ff9800; color: #000; padding: 3px 8px; font-weight: bold; border-radius: 3px; font-size: 0.9rem;">${pCost} pts</span><br>
-                                <small style="color:#555; font-size:0.75rem;">база: ${bCost} pts</small>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
-                            ${upgradesHtml}
-                            ${scarsHtml}
-                        </div>
-
-                        ${shopDropdownHtml}
-                    </div>
+                    <span class="badge upgrade" 
+                          style="background: rgba(77,184,255,0.1); color: #4db8ff; border: 1px solid rgba(77,184,255,0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px; cursor: help;" 
+                          title="${cleanDescription}">
+                        ${u.name} (+${u.ptsModifier} pts)
+                    </span>
                 `;
-            }).join('');
+            }).join('')
+            : "<span style='color:#555; font-style:italic; font-size:0.85rem;'>Модернизаций нет</span>";
+
+        let scarsHtml = s.scars && s.scars.length > 0
+            ? s.scars.map(sc => `<span class="badge scar" style="background: rgba(229,57,53,0.1); color: #e53935; border: 1px solid rgba(229,57,53,0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px;" title="${sc.description || ''}">Шрам: ${sc.id}</span>`).join('')
+            : "";
+
+        const availableUpgradesForShop = dbTraits.filter(t => {
+            if (t.type !== "Upgrade") return false;
+            const factionMatch = (t.factionName === data.factionName || t.factionName === "All");
+            const typeMatch = (t.unitTypeRestriction === "All" || t.unitTypeRestriction.includes(typeInfo));
+            const alreadyHas = (s.upgrades || []).some(up => up.id === t.id);
+
+            return factionMatch && typeMatch && !alreadyHas;
+        });
+
+        let shopDropdownHtml = "";
+        if (availableUpgradesForShop.length > 0) {
+            shopDropdownHtml = `
+                <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #2c3542; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <select id="shop-${s.id}" style="flex: 1; min-width: 200px; padding: 8px; background: #0c0f13; color: #fff; border: 1px solid #3a4454; font-size: 0.85rem; border-radius: 4px;">
+                        <option value="0">-- Купить модернизацию фракции --</option>
+                        ${availableUpgradesForShop.map(t => `<option value="${t.id}">[Цена: ${t.fractionPointsCost} ${data.pointsName || 'ОФ'}] ${t.name} (+${t.ptsModifier} pts)</option>`).join('')}
+                    </select>
+                    <button onclick="buyUpgrade(${s.id})" style="padding: 8px 15px; background: #4db8ff; color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; min-width: 80px;">Купить</button>
+                </div>
+            `;
+        } else {
+            shopDropdownHtml = `<p style="color: #555; font-size: 0.8rem; font-style: italic; margin-top: 10px;">Доступных уникальных улучшений фракции нет.</p>`;
         }
-    } catch (e) {
-        console.error("Критическая ошибка рендеринга ростера:", e);
-    }
+
+        // Динамические стили в зависимости от того, выделен ли юнит (s.isActive)
+        const opacityStyle = s.isActive ? '' : 'opacity: 0.45; filter: grayscale(40%); border-color: #1a2129;';
+        const titleStyle = s.isActive ? '' : 'text-decoration: line-through; color: #666 !important;';
+        const ptsTagBackground = s.isActive ? '#ff9800' : '#2b2f36';
+        const ptsTagColor = s.isActive ? '#000' : '#888';
+
+        return `
+            <div class="card squad-card" style="margin-bottom: 15px; background: #13171e; border: 1px solid #232d38; padding: 15px; border-radius: 6px; box-sizing: border-box; transition: all 0.2s ease; ${opacityStyle}">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232d38; padding-bottom: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="checkbox" 
+                               id="check-${s.id}" 
+                               ${s.isActive ? 'checked' : ''} 
+                               onchange="toggleSquadActive(${s.id})"
+                               style="width: 18px; height: 18px; cursor: pointer; accent-color: #ff9800; margin: 0;">
+                        <div>
+                            <h3 style="margin:0; color:#ff9800; font-size: 1.15rem; ${titleStyle}">${cName}</h3>
+                            <small style="color:#888;">${uType} [${typeInfo}]</small>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="pts-tag" style="background: ${ptsTagBackground}; color: ${ptsTagColor}; padding: 3px 8px; font-weight: bold; border-radius: 3px; font-size: 0.9rem; transition: all 0.2s;">${pCost} pts</span><br>
+                        <small style="color:#555; font-size:0.75rem;">база: ${bCost} pts</small>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${upgradesHtml}
+                    ${scarsHtml}
+                </div>
+
+                ${shopDropdownHtml}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Переключает статус выделения отряда и делает мгновенный локальный ререндер
+ * без отправки запросов на бэкенд.
+ */
+function toggleSquadActive(squadId) {
+    const squad = mySquads.find(s => s.id === squadId);
+    if (!squad) return;
+
+    squad.isActive = !squad.isActive;
+
+    // Извлекаем актуальное состояние для сохранения контекста имен/валют при рендере
+    const factionLabel = document.getElementById('player-faction-name');
+    const resourceNameLabel = document.getElementById('player-points-name');
+
+    const fakeContextData = {
+        factionName: factionLabel ? factionLabel.innerText : "Новобранец",
+        pointsName: resourceNameLabel ? resourceNameLabel.innerText : "Ресурсы Снабжения"
+    };
+
+    renderSquadsList(fakeContextData);
 }
 
 async function addSquad() {
@@ -216,7 +264,7 @@ async function addSquad() {
         pointsCostEl.value = "100";
         await loadMyRoster();
     } else {
-        alert("Не удалось добавить отряд в базу данных.");
+        alert("Не удалось добавит отряд в базу данных.");
     }
 }
 
@@ -402,19 +450,18 @@ async function saveSquadByGM(squadId) {
         await loadMyRoster();
     }
 }
-// Переключатель отображения ввода фракции
+
 function toggleFactionInput(isGeneralStr) {
     const block = document.getElementById('new-trait-faction-block');
     if (!block) return;
 
     if (isGeneralStr === "false") {
-        block.style.display = "flex"; // Показываем поле ввода фракции
+        block.style.display = "flex";
     } else {
-        block.style.display = "none";  // Прячем для общей прокачки
+        block.style.display = "none";
     }
 }
 
-// Функция создания новой прокачки
 async function createNewTraitByGM() {
     const nameEl = document.getElementById('new-trait-name');
     const descEl = document.getElementById('new-trait-desc');
@@ -442,7 +489,6 @@ async function createNewTraitByGM() {
         return alert("Для уникальной модернизации необходимо ввести точное имя фракции!");
     }
 
-    // Собираем объект для отправки в C# контроллер
     const traitDto = {
         name,
         description,
@@ -463,13 +509,11 @@ async function createNewTraitByGM() {
         if (response.ok) {
             alert(`Директива исполнена! Модернизация "${name}" добавлена в Кодекс кампании.`);
 
-            // Сбрасываем форму для удобства следующего ввода
             nameEl.value = "";
             descEl.value = "";
             restrictionEl.value = "All";
             factionNameEl.value = "";
 
-            // Сразу же обновляем глобальный список трейтов в памяти фронтенда, чтобы игроки видели изменения
             await loadGlobalTraits();
             await loadMyRoster();
         } else {

@@ -16,6 +16,9 @@ namespace CampaignApp.Data
         public DbSet<NewsPost> NewsPosts { get; set; }
         public DbSet<Squad> Squads { get; set; }
         public DbSet<CrusadeTrait> CrusadeTraits { get; set; }
-        public DbSet<SquadUpgrade> SquadUpgrades { get; set; } // Добавили таблицу связи
-    }
+        public DbSet<SquadUpgrade> SquadUpgrades { get; set; }
+        public DbSet<CampaignInfo> CampaignInfos { get; set; }
+        public DbSet<CampaignMission> Missions { get; set; }
+        public DbSet<CampaignFaq> Faqs { get; set; }
+        }
 }
