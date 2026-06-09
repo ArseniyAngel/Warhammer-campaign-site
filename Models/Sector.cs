@@ -33,7 +33,7 @@ namespace CampaignApp.Models
     
 
     public string FilesJson { get; set; } = "[]";
-    [NotMapped] /
+    [NotMapped]
     [JsonPropertyName("files")] 
     public List<CampaignApp.Controllers.MapController.MissionFileDto> Files
     {
