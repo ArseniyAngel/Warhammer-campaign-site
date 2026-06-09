@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadNews();
 });
 
-// Проверяем, является ли пользователь ГМ-ом, чтобы показать форму
 async function checkGMRole() {
     try {
         const response = await fetch('/api/auth/me');
@@ -17,7 +16,6 @@ async function checkGMRole() {
     }
 }
 
-// Загрузка новостей с сервера
 async function loadNews() {
     const feed = document.getElementById('news-feed');
     try {
@@ -42,7 +40,6 @@ async function loadNews() {
     }
 }
 
-// Отправка новой записи на бэкенд
 async function submitNews() {
     const title = document.getElementById('news-title').value;
     const content = document.getElementById('news-content').value;
@@ -60,7 +57,7 @@ async function submitNews() {
             alert("Новость добавлена!");
             document.getElementById('news-title').value = "";
             document.getElementById('news-content').value = "";
-            loadNews(); // Обновляем список
+            loadNews();
         } else {
             alert("Ошибка. Возможно, у вас нет прав Гейм-Мастера.");
         }

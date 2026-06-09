@@ -50,14 +50,13 @@ async function loadMyRoster() {
         const data = await response.json();
         mySquads = data.squads || [];
 
-        // Инициализируем флаг активности для каждого юнита (по умолчанию все активны)
         mySquads.forEach(s => {
             if (s.isActive === undefined) {
                 s.isActive = true;
             }
         });
 
-        // Проверка флага администратора из базы данных
+
         if (data.isGMSession === true) {
             isUserAdminFromDB = true;
             const zone = document.getElementById('gm-roster-panel');
@@ -69,7 +68,7 @@ async function loadMyRoster() {
             }
         }
 
-        // Синхронизация названия фракции
+
         const factionLabel = document.getElementById('player-faction-name');
         if (factionLabel) {
             factionLabel.innerText = data.factionName || "Новобранец";
@@ -84,19 +83,19 @@ async function loadMyRoster() {
             }
         }
 
-        // Отображение баланса игрока
+
         const balanceLabel = document.getElementById('player-points');
         if (balanceLabel) {
             balanceLabel.innerText = data.pointsBalance !== undefined ? data.pointsBalance : 0;
         }
 
-        // Отображение названия валюты ресурсов фракции
+
         const resourceNameLabel = document.getElementById('player-points-name');
         if (resourceNameLabel) {
             resourceNameLabel.innerText = data.pointsName || "Ресурсы Снабжения";
         }
 
-        // Рендерим ростер и обновляем счетчик очков армии
+
         renderSquadsList(data);
 
     } catch (err) {
@@ -104,10 +103,7 @@ async function loadMyRoster() {
     }
 }
 
-/**
- * Изолированная функция отрисовки карточек ростера.
- * Принимает data с сервера для сохранения контекста имени валюты и фракции.
- */
+
 function renderSquadsList(data) {
     const squadListContainer = document.getElementById('my-squads-list');
     if (!squadListContainer) return;
@@ -120,7 +116,7 @@ function renderSquadsList(data) {
         return;
     }
 
-    // Подсчет полной стоимости текущего ростера с учетом только выделенных (isActive) отрядов
+
     const totalPtsLabel = document.getElementById('total-army-pts');
     if (totalPtsLabel) {
         const totalPoints = mySquads.reduce((sum, s) => sum + (s.isActive ? (s.pointsCost || 0) : 0), 0);
@@ -178,7 +174,6 @@ function renderSquadsList(data) {
             shopDropdownHtml = `<p style="color: #555; font-size: 0.8rem; font-style: italic; margin-top: 10px;">Доступных уникальных улучшений фракции нет.</p>`;
         }
 
-        // Динамические стили в зависимости от того, выделен ли юнит (s.isActive)
         const opacityStyle = s.isActive ? '' : 'opacity: 0.45; filter: grayscale(40%); border-color: #1a2129;';
         const titleStyle = s.isActive ? '' : 'text-decoration: line-through; color: #666 !important;';
         const ptsTagBackground = s.isActive ? '#ff9800' : '#2b2f36';
@@ -215,17 +210,13 @@ function renderSquadsList(data) {
     }).join('');
 }
 
-/**
- * Переключает статус выделения отряда и делает мгновенный локальный ререндер
- * без отправки запросов на бэкенд.
- */
+
 function toggleSquadActive(squadId) {
     const squad = mySquads.find(s => s.id === squadId);
     if (!squad) return;
 
     squad.isActive = !squad.isActive;
 
-    // Извлекаем актуальное состояние для сохранения контекста имен/валют при рендере
     const factionLabel = document.getElementById('player-faction-name');
     const resourceNameLabel = document.getElementById('player-points-name');
 

@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations; // ДОБАВИЛИ ЭТУ СТРОЧКУ
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using System.Collections.Generic; // Для работы с List
-using System.ComponentModel.DataAnnotations.Schema; // Для [NotMapped]
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
 namespace CampaignApp.Models
@@ -10,20 +10,20 @@ namespace CampaignApp.Models
     {
         public int Id { get; set; }
         
-        [Required] // Теперь компилятор поймет, что это обязательное поле
+        [Required]
         public string Name { get; set; } = "";
         
-        // ID фракции (nullable, может быть пустым — это супер)
+
         public int? ControllingFactionId { get; set; }
         
-        // НАВИГАЦИОННОЕ СВОЙСТВО
+
         [JsonIgnore] 
         public Faction? ControllingFaction { get; set; }
 
         public string ResourceType { get; set; } = "";
         public string Coordinates { get; set; } = "";
 
-        // НОВЫЕ ПОЛЯ ДЛЯ ПОДЗЕМКИ И МЕТОК ГМ
+
         public string Description { get; set; } = "Особых примет ландшафта не зарегистрировано.";
         public string GMMarks { get; set; } = "";
         public bool IsUnderground { get; set; } = false;
@@ -31,10 +31,10 @@ namespace CampaignApp.Models
         public string MissionStatus { get; set; } = "active";
         public string VoterListJson { get; set; } = "[]";
     
-    // Файлы храним как JSON строку внутри текстового поля базы данных
+
     public string FilesJson { get; set; } = "[]";
-    [NotMapped] // Говорит EF Core: "Не создавай такую колонку в БД, это только для кода"
-    [JsonPropertyName("files")] // Сериализатор превратит это свойство в массив "files" в JSON
+    [NotMapped] /
+    [JsonPropertyName("files")] 
     public List<CampaignApp.Controllers.MapController.MissionFileDto> Files
     {
         get

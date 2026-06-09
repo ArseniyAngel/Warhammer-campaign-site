@@ -38,9 +38,8 @@ namespace CampaignApp.Controllers
             public int TraitId { get; set; }
         }
 
-        // ==========================================
         // 1. МЕТОДЫ ДЛЯ ИГРОКОВ (ЛИЧНЫЙ ШТАБ)
-        // ==========================================
+
 
         [HttpGet("my-squads")]
         public IActionResult GetMySquads()
@@ -81,7 +80,6 @@ namespace CampaignApp.Controllers
             string fName = user.Faction?.Name ?? "Неизвестная Фракция";
             string pName = user.Faction?.ResourceName ?? "Очки Фракции";
 
-            // Проверяем роль напрямую из БД для активации ГМ-панели на фронтенде
             bool isGM = (user.Role == "Admin");
 
             return Ok(new { 
@@ -131,7 +129,7 @@ namespace CampaignApp.Controllers
                 return BadRequest($"Это улучшение для фракции {traitFaction}, а ваша фракция — {user.Faction?.Name}.");
             }
 
-            // ИСПРАВЛЕНО: Проверяем ограничение (UnitTypeRestriction) по полю архетипа (squad.Type), а не по имени модели (squad.UnitType)
+            
             if (trait.UnitTypeRestriction != "All" && !trait.UnitTypeRestriction.Contains(squad.Type))
             {
                 return BadRequest($"Данное улучшение нельзя применить к типу '{squad.Type}'. Требуется категория: {trait.UnitTypeRestriction}");
@@ -174,7 +172,6 @@ namespace CampaignApp.Controllers
                 var fProp = t.GetType().GetProperty("FactionName") ?? t.GetType().GetProperty("factionName");
                 string fName = fProp != null ? fProp.GetValue(t)?.ToString() : "All";
                 
-                // ИСПРАВЛЕНИЕ: Если в БД записана пустая строка или null, принудительно ставим "All"
                 if (string.IsNullOrWhiteSpace(fName)) 
                 {
                     fName = "All";
@@ -188,16 +185,14 @@ namespace CampaignApp.Controllers
                     unitTypeRestriction = t.UnitTypeRestriction,
                     ptsModifier = t.PtsModifier,
                     fractionPointsCost = t.FractionPointsCost,
-                    factionName = fName // Теперь тут гарантированно либо имя фракции, либо "All"
+                    factionName = fName 
                 };
             }).ToList();
 
             return Ok(traits);
         }
 
-        // ==========================================
         // 2. МЕТОДЫ ГЕЙМ-МАСТЕРА (ADMIN)
-        // ==========================================
 
         [HttpGet("admin/users")]
         [Authorize(Roles = "Admin")]
@@ -279,7 +274,7 @@ namespace CampaignApp.Controllers
             return Ok();
         }
         [HttpPost("admin/add-trait")]
-        [Authorize(Roles = "Admin")] // Сюда пустит только Гейм-Мастера
+        [Authorize(Roles = "Admin")]
         public IActionResult AddNewTrait([FromBody] CrusadeTraitDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Description))
@@ -287,16 +282,14 @@ namespace CampaignApp.Controllers
                 return BadRequest("Название и описание улучшения не могут быть пустыми!");
             }
 
-            // Создаем новый объект для БД
             var newTrait = new CrusadeTrait
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                Type = "Upgrade", // Устанавливаем тип как Модернизация
+                Type = "Upgrade",
                 UnitTypeRestriction = dto.UnitTypeRestriction,
                 PtsModifier = dto.PtsModifier,
                 FractionPointsCost = dto.FractionPointsCost,
-                // Если ГМ выбрал общую прокачку, пишем "All", иначе — имя конкретной фракции
                 FactionName = dto.IsGeneral ? "All" : dto.FactionName 
             };
 
@@ -306,7 +299,6 @@ namespace CampaignApp.Controllers
             return Ok(new { message = "Модернизация успешно добавлена в Кодекс!", traitId = newTrait.Id });
         }
 
-        // Вспомогательный класс (DTO) для приема данных от фронтенда
         public class CrusadeTraitDto
         {
             public string Name { get; set; } = "";

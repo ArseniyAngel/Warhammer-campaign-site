@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CampaignApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+368ca417647873a76f1c383ebd3bbfe3f2590c7a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d32971d8e1e694e351b3b4e4a826391482ca78e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CampaignApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CampaignApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

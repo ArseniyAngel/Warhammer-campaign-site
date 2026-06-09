@@ -1,9 +1,6 @@
-// Текущий вошедший пользователь
 let currentUser = { username: "", role: "Guest" };
-// Текущий активный слой карты ("surface" - поверхность, "underground" - подземка)
 let currentLayer = "surface";
 let selectedSector = null;
-// 1. Проверка авторизации при загрузке страницы
 async function checkAuth() {
     try {
         const response = await fetch('/api/auth/me');
@@ -246,7 +243,6 @@ function getCenterOfCoords(coordsStr, sectorId) {
 
 let selectedSectorId = null;
 
-// --- ДИНАМИЧЕСКИЕ СТРОКИ ДЛЯ ФАЙЛОВ В АДМИНКЕ ---
 function addAdminFileRow(name = '', url = '') {
     const container = document.getElementById('admin-files-container');
     if (!container) return;
@@ -275,7 +271,6 @@ function getAdminFilesData() {
     return files;
 }
 
-// --- КЛИК ПО СЕКТОРУ И ВЫВОД АКТИВНЫХ МИССИЙ НА ГЛАВНУЮ ПАНЕЛЬ ---
 function selectSector(sectorId) {
     selectedSector = allSectors.find(s => s.id === sectorId);
     if (!selectedSector) {
@@ -290,17 +285,14 @@ function selectSector(sectorId) {
     const container = document.getElementById('sector-missions-container');
     if (!container) return;
 
-    // Безопасный парсинг пула данных миссии из полей сектора
-    const missionName = sector.missionName || "Разведывательная операция";
-    const missionStatus = sector.missionStatus || "active"; // active, hidden, completed
+    const missionName = sector.missionName || "Информация о секторе";
+    const missionStatus = sector.missionStatus || "active"
     const descriptionText = sector.description || "Особых условий правил миссии и ландшафта не заявлено.";
     const currentMarks = sector.gmMarks || "";
-    const files = sector.files || []; // Массив объектов [{name, url}]
-    const votes = sector.votes || []; // Массив строк ["User1", "User2"]
-
+    const files = sector.files || [];
+    const votes = sector.votes || [];
     const hasVoted = votes.includes(currentUser.username);
 
-    // Скрытие миссии от обычных игроков, если ГМ выставил статус "hidden"
     if (missionStatus === "hidden" && currentUser.role !== "Admin") {
         container.innerHTML = `
             <div style="text-align: center; padding: 40px 20px; color: #666;">
@@ -308,7 +300,6 @@ function selectSector(sectorId) {
             </div>
         `;
     } else {
-        // Отрендерить прикрепленные файлы
         let filesHtml = "";
         if (files.length > 0) {
             filesHtml = `
@@ -325,7 +316,7 @@ function selectSector(sectorId) {
             `;
         }
 
-        // Кнопка голосования за участие в миссии (Только для игроков, скрыта для Архива)
+
         let voteButtonHtml = "";
         if (currentUser.role === "Player") {
             voteButtonHtml = `
@@ -382,7 +373,6 @@ function selectSector(sectorId) {
         `;
     }
 
-    // --- СИНХРОНИЗАЦИЯ С ТЕРМИНАЛОМ ГМ ---
     const adminSectorIdInput = document.getElementById('admin-sector-id');
     const adminSectorNameLabel = document.getElementById('admin-sector-name-label');
     const adminFactionSelect = document.getElementById('admin-faction-select');
@@ -406,9 +396,7 @@ function selectSector(sectorId) {
         files.forEach(f => addAdminFileRow(f.name, f.url));
     }
 
-    // В функции selectSector
     if (adminVotesLog) {
-        // Парсим строку JSON прямо из VoterList
         const voters = JSON.parse(selectedSector.voterList || "[]");
 
         if (voters.length > 0) {
@@ -420,7 +408,7 @@ function selectSector(sectorId) {
     }
 }
 
-// --- ГОЛОСОВАНИЕ ЗА МИССИЮ ---
+
 async function voteForSector(sectorId) {
     if (currentUser.role !== "Player") {
         alert("Голосовать могут только авторизованные игроки!");
@@ -436,12 +424,10 @@ async function voteForSector(sectorId) {
         if (response.ok) {
             alert("Голос успешно отдан!");
 
-            // !!! ВАЖНО: ОБНОВЛЯЕМ КАРТУ ПОСЛЕ ГОЛОСА !!!
-            // Получаем свежий список секторов с сервера, где уже есть новый голос в GMMarks
             const mapResp = await fetch('/api/map');
             allSectors = await mapResp.json();
 
-            // Обновляем текущий отображаемый сектор (чтобы админ увидел изменения в блоке admin-votes-log)
+
             selectSector(parseInt(sectorId, 10));
         } else {
             const err = await response.text();
@@ -452,8 +438,7 @@ async function voteForSector(sectorId) {
     }
 }
 
-// --- СОХРАНЕНИЕ ПАРАМЕТРОВ МИССИИ ГМ-ОМ ---
-// --- СОХРАНЕНИЕ ПАРАМЕТРОВ МИССИИ ГМ-ОМ ---
+
 async function saveSectorChanges() {
     const currentSectorId = document.getElementById('admin-sector-id').value;
     if (!currentSectorId) {
@@ -470,15 +455,13 @@ async function saveSectorChanges() {
     const newFactionId = parseInt(factionSelectValue, 10);
     const updatedFiles = getAdminFilesData();
 
-    // НАХОДИМ ОРИГИНАЛЬНОЕ ИМЯ СЕКТОРА
-    // Так как поле Name в C# модели имеет атрибут [Required], его необходимо передавать,
-    // иначе встроенный валидатор ASP.NET Core вернет ошибку 400 Bad Request.
+
     const currentSector = allSectors.find(s => s.id === parseInt(currentSectorId, 10));
     const originalSectorName = currentSector ? currentSector.name : "Сектор";
 
-    // Передаем весь обновленный пакет данных миссии на бэкенд (включая имя)
+
     const updatedData = {
-        name: originalSectorName, // ДОБАВИЛИ ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+        name: originalSectorName,
         controllingFactionId: isNaN(newFactionId) ? 0 : newFactionId,
         missionStatus: mStatus,
         missionName: mName || "Разведывательная миссия",
@@ -501,7 +484,7 @@ async function saveSectorChanges() {
             allSectors = await mapResp.json();
             selectSector(parseInt(currentSectorId, 10));
         } else {
-            // Читаем точный текст ошибки от валидатора бэкенда, если что-то пойдет не так
+
             const errDetails = await response.text();
             console.error("Детали ошибки 400 от сервера:", errDetails);
             alert(`Сервер отклонил сохранение данных сектора (400): ${errDetails}`);

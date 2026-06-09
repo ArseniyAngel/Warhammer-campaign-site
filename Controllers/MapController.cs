@@ -36,8 +36,7 @@ namespace CampaignApp.Controllers
                 s.MissionStatus,
                 s.Files,
                 s.Coordinates,
-                s.GMMarks, // Заметки ГМа видны всем
-                // Список голосов отдаем только админу, для игроков — пустой массив
+                s.GMMarks, 
                 VoterList = isAdmin ? (s.VoterListJson ?? "[]") : "[]" 
             });
 
@@ -82,7 +81,7 @@ namespace CampaignApp.Controllers
             return Ok(sector);
         }
 
-        // 3. МЕТОД ГОЛОСОВАНИЯ (Чистая логика без GMMarks)
+        // 3. МЕТОД ГОЛОСОВАНИЯ
         [HttpPost("{id}/vote")]
         [Authorize(Roles = "Player,Admin")]
         public IActionResult VoteForSector(int id)
@@ -93,12 +92,10 @@ namespace CampaignApp.Controllers
             var username = User.Identity?.Name;
             if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
 
-            // БЕЗОПАСНОЕ ЧТЕНИЕ:
             List<string> voters;
             try 
             {
                 string json = sector.VoterListJson;
-                // Если поле пустое, null или содержит пробелы — принудительно создаем пустой массив
                 if (string.IsNullOrWhiteSpace(json)) 
                 {
                     voters = new List<string>();
@@ -110,7 +107,6 @@ namespace CampaignApp.Controllers
             }
             catch 
             {
-                // Если в базе мусор, сбрасываем список
                 voters = new List<string>();
             }
 

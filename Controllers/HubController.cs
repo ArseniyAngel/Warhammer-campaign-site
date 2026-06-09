@@ -14,7 +14,7 @@ namespace CampaignApp.Controllers
 
         public HubController(CampaignContext context) { _context = context; }
 
-        // ================= FAQ =================
+        // FAQ
         [HttpGet("faq")]
         public IActionResult GetFaqs() => Ok(_context.Faqs.ToList());
 
@@ -38,7 +38,7 @@ namespace CampaignApp.Controllers
             return Ok();
         }
 
-        // ================= РЕГЛАМЕНТ (ПРАВИЛА + ФАЙЛ) =================
+        // РЕГЛАМЕНТ (ПРАВИЛА + ФАЙЛЫ) 
         [HttpGet("regulations")]
         public IActionResult GetRegs()
         {

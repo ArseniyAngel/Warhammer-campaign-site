@@ -30,7 +30,7 @@ namespace CampaignApp.Controllers
             Username = registerData.Username,
             PasswordHash = registerData.PasswordHash,
             Role = "Player",
-            FactionId = null, // СТРОГО NULL! Чтобы SQLite не ругалась на FOREIGN KEY
+            FactionId = null,
             FactionPointsBalance = 0
         };
 
@@ -47,11 +47,10 @@ namespace CampaignApp.Controllers
             var user = _context.Users.FirstOrDefault(u => u.Username == loginData.Username && u.PasswordHash == loginData.PasswordHash);
             if (user == null) return Unauthorized("Неверный логин или пароль!");
 
-            // Создаем "паспорт" пользователя для кук
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role), // Записываем его роль (Admin/Player)
+                new Claim(ClaimTypes.Role, user.Role),
                 new Claim("UserId", user.Id.ToString())
             };
 
@@ -70,7 +69,6 @@ namespace CampaignApp.Controllers
             return Ok("Вышли из аккаунта");
         }
 
-        // 4. ПРОВЕРКА КТО Я (Вызывается фронтендом при загрузке страницы)
         [HttpGet("me")]
         public IActionResult GetCurrentUser()
         {

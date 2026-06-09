@@ -7,10 +7,10 @@ namespace CampaignApp.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public string Title { get; set; } // Название миссии
+        public string Title { get; set; }
         [Required]
-        public string Description { get; set; } // Текст / Задачи
-        public string Reward { get; set; } // Награда фракции
-        public bool IsActive { get; set; } = true; // Активна или заблокирована
+        public string Description { get; set; }
+        public string Reward { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

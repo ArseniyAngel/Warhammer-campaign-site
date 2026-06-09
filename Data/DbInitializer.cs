@@ -7,10 +7,8 @@ namespace CampaignApp.Data
     {
         public static void Initialize(CampaignContext context)
         {
-            // Автоматически создает БД, если её нет
             context.Database.EnsureCreated();
 
-            // 1. Инициализация фракций (если пусто)
             if (!context.Factions.Any())
             {
                 var factions = new Faction[]
@@ -24,7 +22,6 @@ namespace CampaignApp.Data
                 context.SaveChanges();
             }
 
-            // 2. Инициализация секторов карты (если в таблице Sectors пусто)
             if (!context.Sectors.Any())
             {
                 var defaultSectors = new Sector[]
@@ -45,12 +42,11 @@ namespace CampaignApp.Data
                     }
                 };
 
-                // Обрати внимание: Обращаемся строго к свойству Sectors (во множественном числе)
                 context.Sectors.AddRange(defaultSectors);
                 context.SaveChanges();
             }
 
-            // 3. Создаем тестового игрока и отряды (если пользователей еще нет)
+            
             if (!context.Users.Any())
             {
                 var bloodAngels = context.Factions.FirstOrDefault(f => f.Name == "Кровавые Ангелы");
