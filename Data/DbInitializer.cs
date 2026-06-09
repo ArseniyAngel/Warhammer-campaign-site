@@ -88,7 +88,6 @@ namespace CampaignApp.Data
                         }
                     };
 
-                    context.CustomUnits.AddRange(units);
                     context.SaveChanges();
                 }
             }

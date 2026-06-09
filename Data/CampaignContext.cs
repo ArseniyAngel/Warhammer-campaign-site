@@ -11,7 +11,6 @@ namespace CampaignApp.Data
         public DbSet<Sector> Sectors { get; set; } 
         
         public DbSet<User> Users { get; set; }
-        public DbSet<CustomUnit> CustomUnits { get; set; }
         public DbSet<Faction> Factions { get; set; }
         public DbSet<NewsPost> NewsPosts { get; set; }
         public DbSet<Squad> Squads { get; set; }

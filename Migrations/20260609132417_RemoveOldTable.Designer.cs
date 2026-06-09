@@ -3,6 +3,7 @@ using System;
 using CampaignApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CampaignApp.Migrations
 {
     [DbContext(typeof(CampaignContext))]
-    partial class CampaignContextModelSnapshot : ModelSnapshot
+    [Migration("20260609132417_RemoveOldTable")]
+    partial class RemoveOldTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,6 +129,43 @@ namespace CampaignApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CrusadeTraits");
+                });
+
+            modelBuilder.Entity("CampaignApp.Models.CustomUnit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BattleScarsAndUpgrades")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PointsValue")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomUnits");
                 });
 
             modelBuilder.Entity("CampaignApp.Models.Faction", b =>
@@ -314,6 +354,17 @@ namespace CampaignApp.Migrations
                     b.HasIndex("FactionId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CampaignApp.Models.CustomUnit", b =>
+                {
+                    b.HasOne("CampaignApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CampaignApp.Models.Sector", b =>

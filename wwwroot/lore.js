@@ -57,7 +57,7 @@ async function submitNews() {
         });
 
         if (response.ok) {
-            alert("Сводка добавлена в архивы Империума!");
+            alert("Новость добавлена!");
             document.getElementById('news-title').value = "";
             document.getElementById('news-content').value = "";
             loadNews(); // Обновляем список
