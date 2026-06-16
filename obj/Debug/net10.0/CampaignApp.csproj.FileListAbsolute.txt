@@ -142,13 +142,6 @@ D:\Wahasite\CampaignApp\obj\Debug\net10.0\rjimswa.dswa.cache.json
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\scopedcss\bundle\CampaignApp.styles.css
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\w7ok8vb3f2-{0}-mabnsbthpk-mabnsbthpk.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\00mofq31y1-{0}-l89a0g7q0j-l89a0g7q0j.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\wbld6p423d-{0}-2cj9p9dg9e-2cj9p9dg9e.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\edj67vopvo-{0}-0bjyreh2oy-0bjyreh2oy.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\web5thtpog-{0}-t7cy4lzh7v-t7cy4lzh7v.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\ejaxmfdjwe-{0}-ae094fc5vm-ae094fc5vm.gz
-D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\5zh16fmg5j-{0}-x3u15xspng-x3u15xspng.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\7t279f5xc7-{0}-scuntumfgn-scuntumfgn.gz
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\staticwebassets.build.json
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\staticwebassets.build.json.cache
@@ -161,3 +154,10 @@ D:\Wahasite\CampaignApp\obj\Debug\net10.0\refint\CampaignApp.dll
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\CampaignApp.pdb
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\CampaignApp.genruntimeconfig.cache
 D:\Wahasite\CampaignApp\obj\Debug\net10.0\ref\CampaignApp.dll
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\5zh16fmg5j-{0}-wkqu77elxv-wkqu77elxv.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\ejaxmfdjwe-{0}-uunl9m7fy2-uunl9m7fy2.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\web5thtpog-{0}-2cb6f7c5ss-2cb6f7c5ss.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\edj67vopvo-{0}-7gfpt6f7of-7gfpt6f7of.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\wbld6p423d-{0}-iobgpwk8r7-iobgpwk8r7.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\00mofq31y1-{0}-1gzy0eyas7-1gzy0eyas7.gz
+D:\Wahasite\CampaignApp\obj\Debug\net10.0\compressed\w7ok8vb3f2-{0}-5riezhcink-5riezhcink.gz

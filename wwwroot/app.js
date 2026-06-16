@@ -277,21 +277,21 @@ function selectSector(sectorId) {
         console.error("Сектор не найден!");
         return;
     }
-    document.getElementById('admin-sector-name-label').innerText = selectedSector.name;
-    const sector = allSectors.find(s => s.id === sectorId);
-    if (!sector) return;
+
+    const sector = selectedSector;
+    document.getElementById('admin-sector-name-label').innerText = sector.name;
 
     const faction = getFactionData(sector.controllingFactionId);
     const container = document.getElementById('sector-missions-container');
     if (!container) return;
 
     const missionName = sector.missionName || "Информация о секторе";
-    const missionStatus = sector.missionStatus || "active"
+    const missionStatus = sector.missionStatus || "active";
     const descriptionText = sector.description || "Особых условий правил миссии и ландшафта не заявлено.";
     const currentMarks = sector.gmMarks || "";
     const files = sector.files || [];
-    const votes = sector.votes || [];
-    const hasVoted = votes.includes(currentUser.username);
+
+    const hasVoted = sector.hasVoted;
 
     if (missionStatus === "hidden" && currentUser.role !== "Admin") {
         container.innerHTML = `
@@ -316,18 +316,17 @@ function selectSector(sectorId) {
             `;
         }
 
-
         let voteButtonHtml = "";
         if (currentUser.role === "Player") {
             voteButtonHtml = `
                 <div style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px;">
                     ${hasVoted
                     ? `<div style="background: rgba(76,175,80,0.1); border: 1px solid #4caf50; padding: 10px; border-radius: 4px; color: #4caf50; font-weight: bold; text-align: center; font-size: 0.9rem;">
-                                Ваша готовность к участию в этой миссии подтверждена
-                           </div>`
+                            Ваша готовность к участию в этой миссии подтверждена
+                       </div>`
                     : `<button onclick="voteForSector(${sectorId})" style="width: 100%; background: #2b579a; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(43,87,154,0.3);" onmouseover="this.style.background='#3b6cb3'" onmouseout="this.style.background='#2b579a'">
-                                Голосовать за участие в миссии
-                           </button>`
+                            Голосовать за участие в миссии
+                       </button>`
                 }
                 </div>
             `;
@@ -344,29 +343,21 @@ function selectSector(sectorId) {
                     <h3 style="margin: 0; color: #ff9800; font-family: 'Courier New', monospace; font-size: 1.15rem;">${missionName}</h3>
                     <span style="font-size: 0.75rem; color: #555; font-family: monospace;">Сектор ${sectorId}</span>
                 </div>
-
                 <div style="margin-bottom: 12px;">
                     <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; display:block;">Контроль сектора:</span>
                     <span class="faction-badge" style="background-color: ${faction.color}; color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; font-weight: bold; margin-top: 4px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1);">
                         ${faction.name}
                     </span>
                 </div>
-
                 <div style="color: #ddd; font-size: 0.9rem; line-height: 1.4;">
                     <strong style="color: #aaa; font-size: 0.8rem; text-transform: uppercase; display:block; margin-bottom: 4px;">Правила миссии и лор:</strong>
                     <p style="margin: 0; white-space: pre-line;">${descriptionText}</p>
                 </div>
-
-               ${currentMarks.trim() !== "" ? `
-    <div style="margin-top: 12px; padding: 8px 10px; background: rgba(77, 184, 255, 0.08); border-left: 3px solid #4db8ff; color: #4db8ff; font-size: 0.85rem; border-radius: 0 4px 4px 0;">
-        <strong>Фронтовые разведданные:</strong> 
-        ${currentMarks
-                    .replace(/Операция утверждена силами: \[[^\]]+\](,\s*\[[^\]]+\])*/g, '') // Удаляет всю строку с игроками
-                    .trim()
-                }
-    </div>
-` : ""}
-
+                ${currentMarks.trim() !== "" ? `
+                    <div style="margin-top: 12px; padding: 8px 10px; background: rgba(77, 184, 255, 0.08); border-left: 3px solid #4db8ff; color: #4db8ff; font-size: 0.85rem; border-radius: 0 4px 4px 0;">
+                        <strong>Фронтовые разведданные:</strong> ${currentMarks.replace(/Операция утверждена силами: \[[^\]]+\](,\s*\[[^\]]+\])*/g, '').trim()}
+                    </div>
+                ` : ""}
                 ${filesHtml}
                 ${missionStatus === "active" ? voteButtonHtml : ""}
             </div>
@@ -398,13 +389,9 @@ function selectSector(sectorId) {
 
     if (adminVotesLog) {
         const voters = JSON.parse(selectedSector.voterList || "[]");
-
-        if (voters.length > 0) {
-            adminVotesLog.innerHTML = `<span>Проголосовали (${voters.length}):</span>` +
-                voters.map(v => `<span>  ${v}</span>`).join('');
-        } else {
-            adminVotesLog.innerHTML = "Заявок нет.";
-        }
+        adminVotesLog.innerHTML = voters.length > 0
+            ? `<span>Проголосовали (${voters.length}):</span>` + voters.map(v => `<span> ${v}</span>`).join('')
+            : "Заявок нет.";
     }
 }
 
@@ -422,13 +409,14 @@ async function voteForSector(sectorId) {
         });
 
         if (response.ok) {
-            alert("Голос успешно отдан!");
-
             const mapResp = await fetch('/api/map');
-            allSectors = await mapResp.json();
 
+            if (mapResp.ok) {
+                allSectors = await mapResp.json();
 
-            selectSector(parseInt(sectorId, 10));
+                selectSector(parseInt(sectorId, 10));
+                alert("Ваша готовность к участию в миссии подтверждена!");
+            }
         } else {
             const err = await response.text();
             alert("Ошибка при голосовании: " + err);

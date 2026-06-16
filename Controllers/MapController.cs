@@ -25,19 +25,28 @@ namespace CampaignApp.Controllers
         public ActionResult<IEnumerable<object>> GetMap()
         {
             var dbSectors = _context.Sectors.ToList();
+            var username = User.Identity?.Name;
             bool isAdmin = User.Identity.IsAuthenticated && User.IsInRole("Admin");
 
-            var response = dbSectors.Select(s => new {
-                s.Id,
-                s.Name,
-                s.ControllingFactionId,
-                s.Description,
-                s.MissionName,
-                s.MissionStatus,
-                s.Files,
-                s.Coordinates,
-                s.GMMarks, 
-                VoterList = isAdmin ? (s.VoterListJson ?? "[]") : "[]" 
+            var response = dbSectors.Select(s => {
+                List<string> voters = new List<string>();
+                try { 
+                    voters = JsonSerializer.Deserialize<List<string>>(s.VoterListJson ?? "[]") ?? new List<string>(); 
+                } catch { }
+
+                return new {
+                    s.Id,
+                    s.Name,
+                    s.ControllingFactionId,
+                    s.Description,
+                    s.MissionName,
+                    s.MissionStatus,
+                    s.Files,
+                    s.Coordinates,
+                    s.GMMarks, 
+                    VoterList = isAdmin ? voters : null,
+                    HasVoted = username != null && voters.Contains(username)
+                };
             });
 
             return Ok(response);
