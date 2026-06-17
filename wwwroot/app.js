@@ -279,6 +279,7 @@ function selectSector(sectorId) {
     }
 
     const sector = selectedSector;
+    console.log("Данные сектора:", sector);
     document.getElementById('admin-sector-name-label').innerText = sector.name;
 
     const faction = getFactionData(sector.controllingFactionId);
@@ -388,10 +389,26 @@ function selectSector(sectorId) {
     }
 
     if (adminVotesLog) {
-        const voters = JSON.parse(selectedSector.voterList || "[]");
-        adminVotesLog.innerHTML = voters.length > 0
-            ? `<span>Проголосовали (${voters.length}):</span>` + voters.map(v => `<span> ${v}</span>`).join('')
-            : "Заявок нет.";
+        let voters = [];
+        try {
+            let rawVoterList = selectedSector.voterList;
+
+            if (typeof rawVoterList === 'string') {
+                voters = JSON.parse(rawVoterList);
+            } else {
+                voters = rawVoterList || [];
+            }
+        } catch (e) {
+            console.error("Ошибка парсинга voterList:", e);
+            voters = [];
+        }
+
+        if (Array.isArray(voters) && voters.length > 0) {
+            adminVotesLog.innerHTML = `<span>Проголосовали (${voters.length}):</span> ` +
+                voters.map(v => `<span> ${v}</span>`).join(', ');
+        } else {
+            adminVotesLog.innerHTML = "Заявок нет.";
+        }
     }
 }
 

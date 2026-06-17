@@ -44,8 +44,9 @@ namespace CampaignApp.Controllers
                     s.Files,
                     s.Coordinates,
                     s.GMMarks, 
-                    VoterList = isAdmin ? voters : null,
-                    HasVoted = username != null && voters.Contains(username)
+                    HasVoted = username != null && voters.Contains(username),
+                    voterList = isAdmin ? (s.VoterListJson ?? "[]") : "[]"
+                    
                 };
             });
 
